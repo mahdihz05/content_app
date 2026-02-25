@@ -1,0 +1,50 @@
+content_hub/
+├─ manage.py
+├─ content_hub/         # settings, urls, wsgi/asgi
+│  ├─ settings/
+│  ├─ urls.py
+│  └─ ...
+├─ apps/
+│  ├─ users/
+│  │   ├─ models.py
+│  │   ├─ admin.py
+│  │   ├─ api.py
+│  │   ├─ serializers.py
+│  │   └─ tests.py
+│  ├─ campaigns/
+│  │   ├─ models.py        # Campain, Keyword, CampainSocialAccount
+│  │   ├─ services.py      # campaign orchestration helpers
+│  │   ├─ admin.py
+│  │   └─ api.py
+│  ├─ scraping/
+│  │   ├─ models.py        # ScrapedContent
+│  │   ├─ tasks.py         # celery tasks: fetch_url, parse, metrics
+│  │   ├─ scraper/         # implementations: requests, playwright
+│  │   │   ├─ base.py
+│  │   │   ├─ requests_scraper.py
+│  │   │   └─ playwright_scraper.py
+│  │   ├─ parsers/         # html -> cleaned text
+│  │   └─ pipeline.py      # orchestration of scraping steps
+│  ├─ ai_core/
+│  │   ├─ models.py        # GeneratedContent, GeneratedContent_ScrapedContent
+│  │   ├─ embeddings.py    # wrapper for embedding provider + pgvector ops
+│  │   ├─ rag.py           # retriever + prompt builder
+│  │   ├─ generator.py     # wrapper for LLM calls + prompt templates
+│  │   └─ tasks.py         # celery tasks for generation
+│  ├─ publishing/
+│  │   ├─ models.py        # schedule
+│  │   ├─ publishers.py    # social/email publisher wrappers
+│  │   ├─ tasks.py         # publish task (called by n8n webhook or Celery schedule)
+│  │   └─ api.py           # approve/reject endpoints
+│  ├─ integrations/
+│  │   ├─ social/          # connectors (facebook, twitter, instagram)
+│  │   ├─ searchapi/       # serpapi or bing clients
+│  │   └─ email/           # sendgrid/mailgun wrapper
+│  ├─ monitoring/
+│  │   └─ healthchecks.py
+│  └─ utils/
+│      ├─ security.py      # signing helpers, token encryption
+│      └─ validators.py
+├─ docker/
+│  └─ docker-compose.yml
+└─ requirements.txt

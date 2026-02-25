@@ -1,0 +1,17 @@
+ 
+Django>=4.2
+djangorestframework
+django-cors-headers
+python-dotenv
+
+psycopg2-binary
+
+requests
+beautifulsoup4
+lxml
+selenium
+webdriver-manager
+
+celery
+redis
+django-celery-beat
