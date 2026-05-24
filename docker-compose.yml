@@ -1,7 +1,7 @@
 services:
 
   # =====================================================
-  # PostgreSQL
+  # PostgreSQL (STABLE)
   # =====================================================
 
   db:
@@ -11,29 +11,26 @@ services:
 
     restart: always
 
-    env_file:
-      - .env
-
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-strongpassword}
       POSTGRES_DB: ${POSTGRES_DB:-project_db}
 
     volumes:
-      - ./volume/postgres:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
 
     ports:
       - "5432:5432"
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 10
 
     networks:
       - project_network
+
 
   # =====================================================
   # Django Backend
@@ -48,61 +45,31 @@ services:
 
     restart: always
 
-    # برای جلوگیری از crash شدن chromium
     shm_size: "2gb"
 
     env_file:
       - .env
 
     environment:
-
-      # =====================================================
-      # DATABASE
-      # =====================================================
-
       DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_NAME: ${POSTGRES_DB:-project_db}
       DATABASE_USER: ${POSTGRES_USER:-postgres}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-strongpassword}
 
-      # =====================================================
-      # SELENIUM / CHROME
-      # =====================================================
-
       CHROME_BIN: /usr/bin/chromium
-
       CHROMEDRIVER_PATH: /usr/bin/chromedriver
-
-      # true => headless
-      # false => browser ui
       SELENIUM_HEADLESS: "true"
-
       PYTHONUNBUFFERED: "1"
 
     command: >
       sh -c "
         echo 'waiting for postgres...';
-
-        while ! nc -z db 5432;
-        do
-          sleep 1;
-        done;
-
+        while ! nc -z db 5432; do sleep 1; done;
         echo 'postgres started';
-
         python manage.py migrate --noinput;
-
         python manage.py runserver 0.0.0.0:8000
       "
-
-    volumes:
-
-      # پروژه جنگو
-      - ./backend/app:/app
-
-      # ذخیره دائمی پروفایل مرورگر
-      - ./browser_profiles:/app/browser_profiles
 
     ports:
       - "8000:8000"
@@ -114,8 +81,9 @@ services:
     networks:
       - project_network
 
+
   # =====================================================
-  # n8n
+  # n8n (FIXED + SAFE)
   # =====================================================
 
   n8n:
@@ -125,21 +93,29 @@ services:
 
     restart: always
 
-    env_file:
-      - .env
-
     environment:
       N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-adminpass}
 
+      # جلوگیری از permission crash
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
+
+      # مسیر پایدار
+      N8N_USER_FOLDER: /home/node/.n8n
+
     volumes:
-      - ./n8n/data:/home/node/.n8n
+      - n8n_data:/home/node/.n8n
 
     ports:
       - "5678:5678"
 
+    depends_on:
+      db:
+        condition: service_healthy
+
     networks:
       - project_network
+
 
   # =====================================================
   # NGINX
@@ -167,10 +143,20 @@ services:
     networks:
       - project_network
 
+
 # =====================================================
-# NETWORK
+# NETWORKS
 # =====================================================
 
 networks:
   project_network:
     driver: bridge
+
+
+# =====================================================
+# VOLUMES (IMPORTANT FIX)
+# =====================================================
+
+volumes:
+  postgres_data:
+  n8n_data:
