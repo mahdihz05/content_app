@@ -1,0 +1,303 @@
+<!-- templates/dashboard/messaging_automation/account_create.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}افزودن اکانت جدید{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-content">
+
+    <div class="page-header">
+        <div>
+            <h1>افزودن اکانت جدید</h1>
+            <p class="page-description">
+                اتصال اکانت پیام‌رسان به سیستم اتوماسیون
+            </p>
+        </div>
+
+        <a href="{% url 'messaging-account-list-page' %}" class="btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="20"
+                 height="20"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            بازگشت
+        </a>
+    </div>
+
+    <div class="form-container">
+
+        <form id="account-create-form"
+              class="account-form"
+              autocomplete="off">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="name">نام اکانت</label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="مثال: اکانت پشتیبانی"
+                    required
+                >
+
+                <small class="form-help">
+                    یک نام دلخواه برای مدیریت بهتر اکانت
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="platform">پلتفرم پیام‌رسان</label>
+
+                <select
+                    name="platform"
+                    id="platform"
+                    required
+                >
+                    <option value="">انتخاب کنید...</option>
+                    <option value="telegram">تلگرام</option>
+                    <option value="whatsapp">واتساپ</option>
+                    <option value="bale">بله</option>
+                </select>
+
+                <small class="form-help">
+                    پلتفرمی که می‌خواهید اکانت آن را متصل کنید
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="account_identifier">شناسه اکانت</label>
+
+                <input
+                    type="text"
+                    id="account_identifier"
+                    name="account_identifier"
+                    placeholder="مثال: +989123456789 یا @username"
+                    required
+                >
+
+                <small class="form-help">
+                    شماره تلفن یا نام کاربری اکانت
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="phone_number">شماره تلفن</label>
+
+                <input
+                    type="text"
+                    id="phone_number"
+                    name="phone_number"
+                    placeholder="+989123456789"
+                >
+
+                <small class="form-help">
+                    در صورت نیاز برای اتصال استفاده می‌شود
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="api_token">API Token / Session</label>
+
+                <textarea
+                    id="api_token"
+                    name="api_token"
+                    rows="5"
+                    placeholder="در صورت نیاز توکن یا Session را وارد کنید"
+                ></textarea>
+
+                <small class="form-help">
+                    این فیلد اختیاری است
+                </small>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        id="is_active"
+                        name="is_active"
+                        checked
+                    >
+                    <span>اکانت فعال باشد</span>
+                </label>
+            </div>
+
+            <div class="alert alert-info">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="20"
+                     height="20"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+
+                <div>
+                    <strong>نکته مهم:</strong>
+
+                    <p>
+                        بعد از ایجاد اکانت، می‌توانید Session یا اطلاعات
+                        اتصال را از بخش مدیریت اکانت‌ها ثبت کنید.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                    id="submit-btn"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         width="20"
+                         height="20"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+
+                    <span class="btn-text">
+                        ایجاد اکانت
+                    </span>
+                </button>
+
+                <a href="{% url 'messaging-account-list-page' %}"
+                   class="btn-secondary">
+                    انصراف
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const form = document.getElementById('account-create-form');
+
+    if (!form) return;
+
+    const submitBtn = document.getElementById('submit-btn');
+    const submitBtnText = submitBtn.querySelector('.btn-text');
+
+    form.addEventListener('submit', async (e) => {
+
+        e.preventDefault();
+
+        if (submitBtn.disabled) {
+            return;
+        }
+
+        const payload = {
+            name: document.getElementById('name').value.trim(),
+            platform: document.getElementById('platform').value,
+            account_identifier: document.getElementById('account_identifier').value.trim(),
+            phone_number: document.getElementById('phone_number').value.trim(),
+            api_token: document.getElementById('api_token').value.trim(),
+            is_active: document.getElementById('is_active').checked
+        };
+
+        if (!payload.name || !payload.platform || !payload.account_identifier) {
+            alert('لطفاً تمام فیلدهای ضروری را تکمیل کنید');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'در حال ایجاد...';
+
+        try {
+
+            const response = await fetch('/messaging/api/accounts/create/', {
+                method: 'POST',
+                credentials: 'include',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+
+                body: JSON.stringify(payload)
+            });
+
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch (e) {
+                data = {};
+            }
+
+            if (!response.ok) {
+
+                let errorMessage = 'خطا در ایجاد اکانت';
+
+                if (data && typeof data === 'object') {
+
+                    errorMessage = Object.entries(data)
+                        .map(([key, value]) => {
+
+                            const text = Array.isArray(value)
+                                ? value.join(', ')
+                                : value;
+
+                            return `${key}: ${text}`;
+                        })
+                        .join('\n');
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            window.location.href =
+                "{% url 'messaging-account-list-page' %}";
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(error.message || 'خطای ناشناخته');
+
+        } finally {
+
+            submitBtn.disabled = false;
+            submitBtnText.textContent = 'ایجاد اکانت';
+        }
+    });
+
+    function getCSRFToken() {
+
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1] || '';
+    }
+});
+</script>
+{% endblock %}

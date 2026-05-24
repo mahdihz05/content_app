@@ -1,0 +1,141 @@
+.form-box {
+    max-width: 700px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 22px var(--shadow-color);
+    margin: auto;
+    transition: .25s ease;
+}
+
+.ai-card:hover {
+    box-shadow: 0 12px 30px var(--shadow-color);
+}
+
+.form-title {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 26px;
+}
+
+.step {
+    text-align: center;
+}
+
+.circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    transition: .2s;
+}
+
+.step.active .circle {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+    color: var(--bg-primary);
+}
+
+.label {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.line {
+    width: 80px;
+    height: 2px;
+    background: var(--border-color);
+    margin: 0 10px;
+}
+
+.form-group label {
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: .2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--glow-color);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.select-card {
+    border: 1px solid var(--border-color);
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: center;
+    transition: .25s;
+}
+
+.select-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.select-card.active {
+    border-color: var(--accent-color);
+    background: var(--accent-hover);
+}
+
+.primary-btn {
+    background: var(--accent-color);
+    color: var(--bg-primary);
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.primary-btn:hover {
+    background: var(--accent-hover);
+}
+
+.step-hidden {
+    display: none;
+}
+
+.section-title {
+    margin-top: 18px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: var(--text-primary);
+    display: block;
+}
+
+#resultBox {
+    margin-top: 20px;
+    color: var(--text-secondary);
+}

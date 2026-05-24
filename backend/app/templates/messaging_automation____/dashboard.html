@@ -1,0 +1,120 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_title %}
+داشبورد
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/styles/dashboard.css' %}">
+
+<div class="dashboard-container">
+
+    <!-- KPI CARDS -->
+    <div class="cards">
+
+        <div class="card ai-card">
+            <h3>اکانت فعال</h3>
+            <p id="active-accounts">0</p>
+        </div>
+
+        <div class="card ai-card">
+            <h3>پیام امروز</h3>
+            <p id="messages-today">0</p>
+        </div>
+
+        <div class="card ai-card">
+            <h3>کمپین فعال</h3>
+            <p id="active-campaigns">0</p>
+        </div>
+
+        <div class="card ai-card">
+            <h3>نرخ موفقیت</h3>
+            <p id="success-rate">0%</p>
+        </div>
+
+    </div>
+
+    <!-- CHART WIDGETS -->
+    <div class="dashboard-widgets">
+
+        <div class="widget widget-large ai-panel">
+            <h3>روند ارسال پیام</h3>
+            <canvas id="messages-chart"></canvas>
+        </div>
+
+        <div class="widget widget-small ai-panel">
+            <h3>پلتفرم‌ها</h3>
+            <canvas id="platforms-chart"></canvas>
+        </div>
+
+        <div class="widget widget-small ai-panel">
+            <h3>فعالیت هفتگی</h3>
+            <canvas id="weeklyChart"></canvas>
+        </div>
+
+        <div class="widget widget-wide ai-panel">
+            <h3>رشد کلمات کلیدی</h3>
+            <canvas id="keywordGrowth"></canvas>
+        </div>
+
+        <div class="widget widget-small ai-panel">
+            <h3>وضعیت محتوا</h3>
+            <canvas id="contentStatus"></canvas>
+        </div>
+
+    </div>
+
+    <!-- RECENT ACTIVITY -->
+    <div class="panel-box ai-panel">
+
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:20px;
+            "
+        >
+
+            <h3>فعالیت اخیر</h3>
+
+            <button
+                id="refresh-stats-btn"
+                class="btn btn-primary"
+            >
+                <i class="fas fa-sync-alt"></i>
+            </button>
+
+        </div>
+
+        <div
+            class="activity-list"
+            id="activity-list"
+        >
+
+            <div class="loading">
+                در حال بارگذاری...
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FLOATING CHAT BUTTON -->
+
+<a
+    href="/messaging/ai-chat/"
+    class="chatbot-btn"
+>
+    💬
+</a>
+
+<script src="{% static 'assets/scripts/dashboard.js' %}"></script>
+
+{% endblock %}

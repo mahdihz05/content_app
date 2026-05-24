@@ -1,0 +1,20 @@
+ 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+selenium_service/
+browser_profiles/
+
+
+# Docker
+volume/
+n8n/data/
+*.log
+
+# OS
+.DS_Store
+

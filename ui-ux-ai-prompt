@@ -1,0 +1,382 @@
+دستورالعمل طراحی UI/UX با تم AI مینیمال
+قوانین طلایی Theme System (بسیار مهم)
+این پروژه از Theme System مبتنی بر CSS Variables استفاده می‌کند.
+
+❌ استفاده از موارد زیر کاملاً ممنوع است
+رنگ‌های Hardcoded مانند
+
+#fff
+
+#ffffff
+
+#000
+
+#111
+
+white
+
+black
+
+استفاده از rgba دلخواه خارج از سیستم
+
+مثال‌های ممنوع:
+
+css
+color: #fff;
+background: white;
+border: 1px solid #ddd;
+box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+✅ فقط از Theme Variables استفاده کنید
+تمام رنگ‌ها باید فقط از متغیرهای زیر گرفته شوند:
+
+css
+var(--bg-primary)
+var(--bg-secondary)
+var(--bg-tertiary)
+
+var(--text-primary)
+var(--text-secondary)
+var(--text-muted)
+
+var(--accent-color)
+var(--accent-hover)
+
+var(--card-bg)
+var(--border-color)
+
+var(--glow-color)
+var(--shadow-color)
+
+var(--error-color)
+var(--success-color)
+var(--warning-color)
+هر کامپوننتی که ساخته می‌شود باید با این توکن‌ها سازگار باشد.
+
+هدف:
+
+پشتیبانی کامل Dark Theme
+پشتیبانی کامل Light Theme
+بدون نیاز به تغییر کد کامپوننت‌ها
+تم و Design System
+رنگ‌بندی (Theme Variables)
+تم تیره (Dark Theme - پیش‌فرض)
+css
+:root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+
+    --accent-color: #0ea5e9;
+    --accent-hover: #0284c7;
+
+    --card-bg: rgba(30, 41, 59, 0.6);
+
+    --border-color: rgba(14, 165, 233, 0.2);
+    --glow-color: rgba(14, 165, 233, 0.4);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+
+    --error-color: #ef4444;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+}
+تم روشن (Light Theme)
+css
+body.light-theme {
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e2e8f0;
+
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+
+    --accent-color: #0ea5e9;
+    --accent-hover: #0284c7;
+
+    --card-bg: rgba(255, 255, 255, 0.8);
+
+    --border-color: rgba(14, 165, 233, 0.3);
+    --glow-color: rgba(14, 165, 233, 0.2);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+
+    --error-color: #ef4444;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+}
+سبک طراحی (AI Minimal SaaS Style)
+UI باید شبیه محصولات مدرن AI باشد مانند:
+
+Vercel
+Linear
+OpenAI Dashboard
+ویژگی‌های اجباری:
+
+طراحی مینیمال
+فضای سفید مناسب
+مرزهای subtle
+سایه‌های نرم
+hierarchy واضح
+hover animation ملایم
+glassmorphism سبک
+blur پس‌زمینه
+افکت‌های بصری
+دایره‌های نورانی (Glow Effects)
+css
+.bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+}
+css
+.glow-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    top: -150px;
+    right: -150px;
+    animation: pulse 8s ease-in-out infinite;
+}
+css
+.glow-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    bottom: -100px;
+    left: -100px;
+    animation: pulse 10s ease-in-out infinite reverse;
+}
+شبکه پس‌زمینه (Grid Background)
+css
+.bg-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-image:
+        linear-gradient(var(--border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+
+    background-size: 50px 50px;
+
+    pointer-events: none;
+    z-index: 0;
+}
+Backdrop Blur و سایه
+css
+.card,
+.panel-box,
+.sidebar,
+.topbar {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+
+    box-shadow: 0 25px 50px -12px var(--shadow-color);
+
+    border: 1px solid var(--border-color);
+
+    transition: all 0.3s ease;
+}
+تایپوگرافی
+css
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+عنوان اصلی
+css
+.page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+عنوان کارت
+css
+.card h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+مقدار عددی
+css
+.card p {
+    font-size: 32px;
+    color: var(--accent-color);
+    font-weight: 700;
+}
+اینپوت‌ها و فرم‌ها
+استایل پایه
+css
+input,
+textarea,
+select {
+
+    width: 100%;
+
+    padding: 14px 16px;
+
+    background: var(--card-bg);
+
+    backdrop-filter: blur(20px);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 12px;
+
+    color: var(--text-primary);
+
+    font-size: 15px;
+
+    transition: all 0.3s ease;
+
+    outline: none;
+}
+placeholder
+
+css
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
+}
+Focus State
+css
+input:focus,
+textarea:focus,
+select:focus {
+
+    border-color: var(--accent-color);
+
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+
+}
+Error State
+css
+input.error {
+    border-color: var(--error-color);
+}
+Success State
+css
+input.success {
+    border-color: var(--success-color);
+}
+دکمه‌ها
+Primary Button
+css
+.btn-primary {
+
+    padding: 14px 28px;
+
+    background: linear-gradient(
+        135deg,
+        var(--accent-color),
+        var(--accent-hover)
+    );
+
+    color: white;
+
+    border: none;
+
+    border-radius: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+
+    box-shadow: 0 8px 16px -4px var(--glow-color);
+}
+hover
+
+css
+.btn-primary:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 12px 24px -8px var(--glow-color);
+
+}
+کارت‌ها (Cards)
+css
+.card {
+
+    background: var(--card-bg);
+
+    backdrop-filter: blur(20px);
+
+    padding: 24px;
+
+    border-radius: 16px;
+
+    border: 1px solid var(--border-color);
+
+    box-shadow: 0 25px 50px -12px var(--shadow-color);
+
+    transition: all 0.3s ease;
+}
+hover
+
+css
+.card:hover {
+
+    transform: translateY(-4px);
+
+    border-color: var(--accent-color);
+
+}
+قوانین مهم
+ممنوعیت‌های مطلق
+ساختار HTML تغییر نکند
+ترتیب المان‌ها تغییر نکند
+Django template tags دست نخورده بماند
+text
+{% csrf_token %}
+{% url %}
+{% load static %}
+{{ variable }}
+{% block %}
+لینک‌ها تغییر نکند
+action فرم تغییر نکند
+JS اصلی پروژه تغییر نکند
+قوانین فایل‌ها
+استایل‌ها باید در فایل جدا باشند:
+
+text
+static/assets/styles/
+اسکریپت‌ها:
+
+text
+static/assets/scripts/
+بدون وابستگی خارجی
+اجازه استفاده از:
+
+Bootstrap
+Tailwind
+jQuery
+UI libraries
+وجود ندارد.
+
+فقط:
+
+text
+HTML
+CSS
+Vanilla JavaScript
+هدف نهایی UI
+تمام صفحات باید حس زیر را منتقل کنند:
+
+SaaS مدرن
+ابزار AI حرفه‌ای
+طراحی تمیز
+مینیمال
+سریع
+هماهنگ با Dashboard

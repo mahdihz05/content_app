@@ -1,0 +1,536 @@
+<!-- templates/messaging/auto_reply.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}پاسخگویی هوشمند{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging-auto-reply.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auto-reply-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-robot"></i>
+                پاسخگویی هوشمند
+            </h1>
+            <p class="page-description">مدیریت پاسخ‌های خودکار و هوشمند به پیام‌ها</p>
+        </div>
+        <button class="btn btn-primary" id="add-rule-btn">
+            <i class="fas fa-plus"></i>
+            <span>افزودن قانون جدید</span>
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value" id="total-rules">0</div>
+                <div class="stat-label">کل قوانین</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value" id="active-rules">0</div>
+                <div class="stat-label">قوانین فعال</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                <i class="fas fa-reply"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value" id="total-replies">0</div>
+                <div class="stat-label">پاسخ‌های ارسال شده</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value" id="success-rate">0%</div>
+                <div class="stat-label">نرخ موفقیت</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+                type="text"
+                id="search-input"
+                placeholder="جستجو در قوانین..."
+                class="search-input"
+            >
+        </div>
+
+        <div class="filter-group">
+            <select id="account-filter" class="filter-select">
+                <option value="">همه اکانت‌ها</option>
+            </select>
+
+            <select id="status-filter" class="filter-select">
+                <option value="">همه وضعیت‌ها</option>
+                <option value="active">فعال</option>
+                <option value="inactive">غیرفعال</option>
+            </select>
+
+            <select id="type-filter" class="filter-select">
+                <option value="">همه انواع</option>
+                <option value="keyword">کلیدواژه</option>
+                <option value="pattern">الگو</option>
+                <option value="ai">هوش مصنوعی</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Rules List -->
+    <div class="rules-section">
+        <div class="rules-grid" id="rules-grid">
+            <!-- Rules will be inserted here dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3 class="empty-title">هیچ قانونی یافت نشد</h3>
+            <p class="empty-description">برای شروع، یک قانون پاسخگویی جدید ایجاد کنید</p>
+            <button class="btn btn-primary" id="empty-add-btn">
+                <i class="fas fa-plus"></i>
+                <span>افزودن قانون</span>
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state">
+            <div class="spinner"></div>
+            <p>در حال بارگذاری...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Rule Modal -->
+<div id="rule-modal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modal-title">افزودن قانون جدید</h3>
+            <button class="close-modal" data-modal="rule-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <form id="rule-form">
+                {% csrf_token %}
+                <input type="hidden" id="rule-id" name="id">
+
+                <!-- Rule Name -->
+                <div class="form-group">
+                    <label for="rule-name" class="form-label required">
+                        <i class="fas fa-tag"></i>
+                        نام قانون
+                    </label>
+                    <input
+                        type="text"
+                        id="rule-name"
+                        name="name"
+                        class="form-control"
+                        placeholder="مثال: پاسخ به سلام"
+                        required
+                    >
+                </div>
+
+                <!-- Account Selection -->
+                <div class="form-group">
+                    <label for="rule-account" class="form-label required">
+                        <i class="fas fa-user-circle"></i>
+                        اکانت
+                    </label>
+                    <select id="rule-account" name="account" class="form-control" required>
+                        <option value="">انتخاب اکانت</option>
+                    </select>
+                </div>
+
+                <!-- Rule Type -->
+                <div class="form-group">
+                    <label class="form-label required">
+                        <i class="fas fa-cog"></i>
+                        نوع قانون
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-card">
+                            <input type="radio" name="rule_type" value="keyword" checked>
+                            <div class="radio-card-content">
+                                <i class="fas fa-key"></i>
+                                <span class="radio-card-title">کلیدواژه</span>
+                                <span class="radio-card-desc">پاسخ به کلمات خاص</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="rule_type" value="pattern">
+                            <div class="radio-card-content">
+                                <i class="fas fa-project-diagram"></i>
+                                <span class="radio-card-title">الگو (Regex)</span>
+                                <span class="radio-card-desc">پاسخ به الگوی متنی</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="rule_type" value="ai">
+                            <div class="radio-card-content">
+                                <i class="fas fa-brain"></i>
+                                <span class="radio-card-title">هوش مصنوعی</span>
+                                <span class="radio-card-desc">پاسخ هوشمند با AI</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Trigger Keywords (for keyword type) -->
+                <div class="form-group" id="keywords-group">
+                    <label for="rule-keywords" class="form-label required">
+                        <i class="fas fa-bullseye"></i>
+                        کلیدواژه‌ها
+                    </label>
+                    <input
+                        type="text"
+                        id="rule-keywords"
+                        name="trigger_keywords"
+                        class="form-control"
+                        placeholder="مثال: سلام، درود، hello"
+                    >
+                    <small class="form-hint">
+                        کلیدواژه‌ها را با کاما (,) جدا کنید
+                    </small>
+                </div>
+
+                <!-- Trigger Pattern (for pattern type) -->
+                <div class="form-group" id="pattern-group" style="display: none;">
+                    <label for="rule-pattern" class="form-label required">
+                        <i class="fas fa-code"></i>
+                        الگوی Regex
+                    </label>
+                    <input
+                        type="text"
+                        id="rule-pattern"
+                        name="trigger_pattern"
+                        class="form-control"
+                        placeholder="مثال: ^قیمت.*"
+                    >
+                    <small class="form-hint">
+                        الگوی عبارت منظم (Regular Expression) را وارد کنید
+                    </small>
+                </div>
+
+                <!-- AI Prompt (for ai type) -->
+                <div class="form-group" id="ai-prompt-group" style="display: none;">
+                    <label for="ai-prompt" class="form-label required">
+                        <i class="fas fa-comment-dots"></i>
+                        دستورالعمل هوش مصنوعی
+                    </label>
+                    <textarea
+                        id="ai-prompt"
+                        name="ai_prompt"
+                        class="form-control textarea-control"
+                        rows="3"
+                        placeholder="مثال: به صورت دوستانه و مؤدبانه پاسخ بده. اطلاعات محصولات را ارائه کن."
+                    ></textarea>
+                    <small class="form-hint">
+                        دستورالعمل‌های خود را برای هوش مصنوعی بنویسید
+                    </small>
+                </div>
+
+                <!-- Context Info (for ai type) -->
+                <div class="form-group" id="context-group" style="display: none;">
+                    <label for="context-info" class="form-label">
+                        <i class="fas fa-info-circle"></i>
+                        اطلاعات زمینه‌ای
+                    </label>
+                    <textarea
+                        id="context-info"
+                        name="context_info"
+                        class="form-control textarea-control"
+                        rows="3"
+                        placeholder="مثال: ما یک فروشگاه آنلاین لوازم الکترونیکی هستیم..."
+                    ></textarea>
+                    <small class="form-hint">
+                        اطلاعات کسب‌وکار خود را برای AI وارد کنید
+                    </small>
+                </div>
+
+                <!-- Response Text (for keyword and pattern) -->
+                <div class="form-group" id="response-group">
+                    <label for="rule-response" class="form-label required">
+                        <i class="fas fa-reply"></i>
+                        متن پاسخ
+                    </label>
+                    <textarea
+                        id="rule-response"
+                        name="response_text"
+                        class="form-control textarea-control"
+                        rows="4"
+                        placeholder="متن پاسخ خود را وارد کنید..."
+                    ></textarea>
+                    <small class="form-hint">
+                        می‌توانید از متغیرهای {name}، {phone} استفاده کنید
+                    </small>
+                </div>
+
+                <!-- Priority -->
+                <div class="form-group">
+                    <label for="rule-priority" class="form-label">
+                        <i class="fas fa-sort-amount-up"></i>
+                        اولویت
+                    </label>
+                    <input
+                        type="number"
+                        id="rule-priority"
+                        name="priority"
+                        class="form-control"
+                        min="1"
+                        max="100"
+                        value="1"
+                    >
+                    <small class="form-hint">
+                        عدد بالاتر = اولویت بیشتر (1 تا 100)
+                    </small>
+                </div>
+
+                <!-- Active Status -->
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rule-active" name="is_active" checked>
+                        <span class="checkbox-custom"></span>
+                        <span>فعال کردن این قانون</span>
+                    </label>
+                </div>
+
+                <!-- Advanced Options -->
+                <div class="advanced-section">
+                    <button type="button" class="advanced-toggle" id="advanced-toggle">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>تنظیمات پیشرفته</span>
+                    </button>
+
+                    <div class="advanced-content" id="advanced-content" style="display: none;">
+                        <!-- Time Restrictions -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-clock"></i>
+                                محدودیت زمانی
+                            </label>
+                            <div class="time-range">
+                                <div class="time-input-wrapper">
+                                    <label for="start-time">از ساعت:</label>
+                                    <input
+                                        type="time"
+                                        id="start-time"
+                                        name="start_time"
+                                        class="form-control"
+                                    >
+                                </div>
+                                <span class="time-separator">تا</span>
+                                <div class="time-input-wrapper">
+                                    <label for="end-time">تا ساعت:</label>
+                                    <input
+                                        type="time"
+                                        id="end-time"
+                                        name="end_time"
+                                        class="form-control"
+                                    >
+                                </div>
+                            </div>
+                            <small class="form-hint">
+                                قانون فقط در این بازه زمانی فعال خواهد بود
+                            </small>
+                        </div>
+
+                        <!-- Max Replies Per Contact -->
+                        <div class="form-group">
+                            <label for="max-replies" class="form-label">
+                                <i class="fas fa-redo"></i>
+                                حداکثر پاسخ به هر کاربر
+                            </label>
+                            <input
+                                type="number"
+                                id="max-replies"
+                                name="max_replies_per_contact"
+                                class="form-control"
+                                min="0"
+                                placeholder="نامحدود (خالی بگذارید)"
+                            >
+                            <small class="form-hint">
+                                حداکثر تعداد پاسخ به هر مخاطب (0 یا خالی = نامحدود)
+                            </small>
+                        </div>
+
+                        <!-- Cooldown -->
+                        <div class="form-group">
+                            <label for="cooldown" class="form-label">
+                                <i class="fas fa-hourglass-half"></i>
+                                فاصله زمانی بین پاسخ‌ها (دقیقه)
+                            </label>
+                            <input
+                                type="number"
+                                id="cooldown"
+                                name="cooldown_minutes"
+                                class="form-control"
+                                min="0"
+                                value="0"
+                                placeholder="0"
+                            >
+                            <small class="form-hint">
+                                حداقل فاصله زمانی بین دو پاسخ به یک کاربر (0 = بدون محدودیت)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="fas fa-save"></i>
+                        <span>ذخیره قانون</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary cancel-btn" data-modal="rule-modal">
+                        <i class="fas fa-times"></i>
+                        <span>انصراف</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">تأیید حذف</h3>
+            <button class="close-modal" data-modal="delete-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>آیا از حذف قانون "<strong id="delete-rule-name"></strong>" اطمینان دارید؟</p>
+                <p class="warning-text">این عملیات قابل بازگشت نیست و تمام مکالمات مرتبط نیز حذف خواهند شد.</p>
+            </div>
+
+            <form id="delete-form">
+                <input type="hidden" id="delete-rule-id">
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        <span>حذف قانون</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary cancel-btn" data-modal="delete-modal">
+                        <i class="fas fa-times"></i>
+                        <span>انصراف</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Test Rule Modal -->
+<div id="test-modal" class="modal">
+    <div class="modal-content modal-md">
+        <div class="modal-header">
+            <h3 class="modal-title">تست قانون: <span id="test-rule-name"></span></h3>
+            <button class="close-modal" data-modal="test-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="test-section">
+                <input type="hidden" id="test-rule-id">
+
+                <div class="form-group">
+                    <label for="test-message" class="form-label">
+                        <i class="fas fa-comment"></i>
+                        پیام تست
+                    </label>
+                    <textarea
+                        id="test-message"
+                        class="form-control textarea-control"
+                        rows="3"
+                        placeholder="پیام خود را وارد کنید..."
+                    ></textarea>
+                </div>
+
+                <button class="btn btn-primary" id="run-test-btn">
+                    <i class="fas fa-play"></i>
+                    <span>اجرای تست</span>
+                </button>
+
+                <div class="test-result" id="test-result" style="display: none;">
+                    <div class="result-header">
+                        <i class="fas fa-check-circle" id="result-icon"></i>
+                        <span id="result-title">نتیجه تست</span>
+                    </div>
+                    <div class="result-content" id="test-result-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conversations Modal -->
+<div id="conversations-modal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">مکالمات: <span id="conv-rule-name"></span></h3>
+            <button class="close-modal" data-modal="conversations-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <input type="hidden" id="conv-rule-id">
+
+            <div class="conversations-list" id="conversations-list">
+                <!-- Conversations will be loaded here -->
+            </div>
+
+            <div class="empty-conversations" id="empty-conversations" style="display: none;">
+                <i class="fas fa-comments"></i>
+                <p>هنوز مکالمه‌ای ثبت نشده است</p>
+            </div>
+
+            <div class="loading-conversations" id="loading-conversations">
+                <div class="spinner"></div>
+                <p>در حال بارگذاری مکالمات...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/messaging-auto-reply.js' %}"></script>
+{% endblock %}

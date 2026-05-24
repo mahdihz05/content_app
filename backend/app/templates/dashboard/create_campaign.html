@@ -1,0 +1,62 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}ایجاد کمپین{% endblock %}
+{% block page_title %}ایجاد کمپین{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/styles/campaign_create.css' %}">
+
+<div class="form-box ai-card">
+
+<div class="stepper">
+    <div class="step active" id="step-indicator-1">
+        <div class="circle">1</div>
+        <div class="label">اطلاعات کمپین</div>
+    </div>
+    <div class="line"></div>
+    <div class="step" id="step-indicator-2">
+        <div class="circle">2</div>
+        <div class="label">تنظیمات</div>
+    </div>
+</div>
+
+<h2 class="form-title">ایجاد کمپین جدید</h2>
+
+<div id="step1">
+    <div class="form-group">
+        <label>عنوان کمپین</label>
+        <input id="title" type="text" placeholder="مثلا: کمپین سئو فروشگاه">
+    </div>
+
+    <div class="form-group">
+        <label>کلمه کلیدی اصلی</label>
+        <input id="main_keyword" type="text" placeholder="مثلا: خرید کفش">
+    </div>
+
+    <label class="section-title">هدف کمپین</label>
+    <div id="goalGrid" class="card-grid"></div>
+
+    <label class="section-title">پلتفرم</label>
+    <div id="platformGrid" class="card-grid"></div>
+
+    <button class="primary-btn" onclick="loadSchema()">مرحله بعد</button>
+</div>
+
+<div id="step2" class="step-hidden">
+    <h3 class="section-title">تنظیمات کمپین</h3>
+    <div id="dynamicForm"></div>
+
+    <button class="primary-btn" onclick="createCampaign()">ایجاد کمپین</button>
+</div>
+
+<div id="resultBox"></div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/create_campaign.js' %}"></script>
+{% endblock %}

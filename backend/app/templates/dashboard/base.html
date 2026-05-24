@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'assets/styles/base.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/styles/font.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body data-theme="dark">
+
+<div class="dashboard">
+
+    <!-- Background Effects -->
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+    <div class="bg-grid"></div>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <h2>پنل محتوا</h2>
+        </div>
+
+        <ul class="menu">
+
+            <li class="menu-item">
+                <div class="menu-title">داشبورد</div>
+                <ul class="submenu">
+                    <li>
+                        <a href="{% url 'dashboard' %}">نمای کلی</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-title">کمپین ها</div>
+                <ul class="submenu">
+                    <li>
+                        <a href="{% url 'create-campaign-page' %}">ایجاد کمپین</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'campaign-list-page' %}">لیست کمپین ها</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-title">مدیریت محتوا</div>
+                <ul class="submenu">
+                    <li>
+                        <a href="{% url 'create-content-page' %}">ایجاد محتوا</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'content-list-page' %}">لیست محتوا ها</a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- بخش اتوماسیون پیام‌رسانی -->
+            <li class="menu-item">
+                <div class="menu-title">اتوماسیون پیام‌رسانی</div>
+                <ul class="submenu">
+                    <li>
+                        <a href="{% url 'messaging-dashboard' %}">داشبورد پیام‌رسانی</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'messaging-accounts' %}">مدیریت اکانت‌ها</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'messaging-bulk-send' %}">ارسال انبوه</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'messaging-auto-reply' %}">پاسخگویی هوشمند</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-title">پروژه‌ها</div>
+                <ul class="submenu">
+                    <li>پروژه جدید</li>
+                    <li>لیست پروژه‌ها</li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-title">پلتفرم ها</div>
+                <ul class="submenu">
+                    <li>وب سایت</li>
+                    <li>لیست پلتفرم‌ها</li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-title">تنظیمات</div>
+                <ul class="submenu">
+                    <li>پروفایل</li>
+                    <li>تنظیمات حساب</li>
+                </ul>
+            </li>
+
+        </ul>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div class="page-title">
+                {% block page_title %}Dashboard{% endblock %}
+            </div>
+
+            <div class="user-box">
+                <button id="theme-toggle" class="theme-toggle" title="تغییر تم">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <span>{{ request.user.phone_number }}</span>
+                <button onclick="logoutUser()" class="logout-btn">خروج</button>
+            </div>
+
+        </header>
+
+        <section class="content">
+            {% block content %}
+            {% endblock %}
+        </section>
+
+    </main>
+
+</div>
+
+<script src="{% static 'assets/scripts/base.js' %}"></script>
+
+<script>
+async function logoutUser(){
+    try{
+        const response = await fetch("{% url 'logout' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+
+        const data = await response.json()
+
+        if(data.success){
+            window.location.href = "{% url 'login' %}";
+        } else {
+            alert("خطا در خروج")
+        }
+
+    } catch(error){
+        console.error(error)
+        alert("خطا در ارتباط با سرور")
+    }
+}
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

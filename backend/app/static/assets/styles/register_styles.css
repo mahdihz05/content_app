@@ -1,0 +1,550 @@
+/* ---------------- Root Variables (AI Theme) ---------------- */
+
+:root {
+    /* رنگ‌های اصلی - تم AI */
+    --primary: #0ea5e9;
+    --primary-hover: #0284c7;
+    --primary-light: #38bdf8;
+
+    /* رنگ‌های وضعیت */
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+
+    /* گرادینت AI */
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    --card-bg: #ffffff;
+
+    /* رنگ‌های متن */
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+
+    /* حاشیه و سایه */
+    --border: #e2e8f0;
+    --border-focus: #0ea5e9;
+    --border-error: #ef4444;
+    --border-success: #10b981;
+
+    --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.12);
+
+    /* شعاع گوشه */
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+}
+
+/* ---------------- Base Reset ---------------- */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: var(--text-dark);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* ---------------- Container ---------------- */
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+
+    display: flex;
+
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-lg);
+
+    overflow: hidden;
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
+}
+
+/* ---------------- Form Section ---------------- */
+
+.form-container {
+    flex: 1;
+    padding: 56px 48px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* ---------------- Titles ---------------- */
+
+.form-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.form-subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    font-weight: 400;
+}
+
+/* ---------------- Form Groups ---------------- */
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    transition: color 0.2s ease;
+}
+
+.form-group.error label {
+    color: var(--error);
+}
+
+.form-group.success label {
+    color: var(--success);
+}
+
+/* ---------------- Input Wrapper (برای آیکون رمز) ---------------- */
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+
+    font-size: 15px;
+    font-family: inherit;
+
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+
+    background: #fafafa;
+    color: var(--text-dark);
+
+    transition: all 0.25s ease;
+}
+
+.form-group input::placeholder {
+    color: var(--text-light);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+.form-group input:hover:not(:focus) {
+    border-color: #cbd5e1;
+    background: #ffffff;
+}
+
+/* وضعیت خطا */
+.form-group.error input {
+    border-color: var(--border-error);
+    background: #fef2f2;
+}
+
+.form-group.error input:focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+/* وضعیت موفق */
+.form-group.success input {
+    border-color: var(--border-success);
+    background: #f0fdf4;
+}
+
+.form-group.success input:focus {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+/* آیکون نمایش/مخفی رمز */
+.toggle-password {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+    user-select: none;
+    font-size: 18px;
+}
+
+.toggle-password:hover {
+    color: var(--primary);
+}
+
+.form-group input[type="password"] + .toggle-password::before {
+    content: '👁️';
+}
+
+.form-group input[type="text"] + .toggle-password::before {
+    content: '🙈';
+}
+
+/* فضای اضافی برای آیکون */
+.form-group.has-icon input {
+    padding-left: 45px;
+}
+
+/* ---------------- پیام خطا ---------------- */
+
+.error-message {
+    display: none;
+    font-size: 13px;
+    color: var(--error);
+    margin-top: 6px;
+    animation: slideDown 0.2s ease;
+}
+
+.form-group.error .error-message {
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------------- نشانگر قدرت رمز ---------------- */
+
+.password-strength {
+    margin-top: 8px;
+    display: none;
+}
+
+.password-strength.active {
+    display: block;
+}
+
+.strength-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-fill.weak {
+    width: 33%;
+    background: var(--error);
+}
+
+.strength-fill.medium {
+    width: 66%;
+    background: var(--warning);
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background: var(--success);
+}
+
+.strength-text {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.strength-text.weak {
+    color: var(--error);
+}
+
+.strength-text.medium {
+    color: var(--warning);
+}
+
+.strength-text.strong {
+    color: var(--success);
+}
+
+/* حذف المان اضافی */
+.input-border {
+    display: none;
+}
+
+/* ---------------- Submit Button ---------------- */
+
+.submit-button {
+    width: 100%;
+    padding: 16px;
+    margin-top: 8px;
+
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+
+    border: none;
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.submit-button:hover::before {
+    opacity: 1;
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.35);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-button:disabled::before {
+    display: none;
+}
+
+/* لودینگ اسپینر */
+.submit-button .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.submit-button.loading .spinner {
+    display: block;
+}
+
+.submit-button.loading .button-text {
+    opacity: 0.7;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------------- Links ---------------- */
+
+.switch-form-text {
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.switch-form-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 4px;
+    transition: color 0.2s ease;
+}
+
+.switch-form-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* ---------------- Image Section (AI Theme) ---------------- */
+
+.image-container {
+    flex: 1;
+
+    background: var(--bg-gradient);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    padding: 64px 48px;
+    text-align: center;
+
+    position: relative;
+    overflow: hidden;
+}
+
+/* افکت شبکه AI */
+.image-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.4;
+}
+
+/* دایره‌های نورانی */
+.image-container::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.3;
+    }
+}
+
+.modern-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+    color: #ffffff;
+    opacity: 0.95;
+    z-index: 1;
+
+    filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.3));
+}
+
+.image-container-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 12px;
+    z-index: 1;
+    letter-spacing: -0.3px;
+}
+
+.image-container-subtitle {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 280px;
+    line-height: 1.6;
+    z-index: 1;
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        max-width: 480px;
+    }
+
+    .image-container {
+        order: -1;
+        padding: 48px 32px;
+    }
+
+    .form-container {
+        padding: 48px 32px;
+    }
+
+    .form-title {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+
+    .form-container {
+        padding: 32px 24px;
+    }
+
+    .image-container {
+        padding: 40px 24px;
+    }
+
+    .form-title {
+        font-size: 24px;
+    }
+}

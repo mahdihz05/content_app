@@ -1,0 +1,272 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}ارسال انبوه پیام{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging-bulk-send.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bulk-send-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-paper-plane"></i>
+                ارسال انبوه پیام
+            </h1>
+            <p class="page-description">ارسال پیام به لیست مخاطبین</p>
+        </div>
+    </div>
+
+    <div class="bulk-send-content">
+        <div class="form-section">
+            <form id="bulk-send-form" class="bulk-form" autocomplete="off" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="account-select" class="form-label">
+                        <i class="fas fa-user-circle"></i>
+                        انتخاب اکانت
+                    </label>
+                    <select id="account-select" name="account_id" class="form-control" required>
+                        <option value="">اکانت مورد نظر را انتخاب کنید</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-comment-dots"></i>
+                        نوع پیام
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="message_type" value="text" checked>
+                            <span class="radio-custom"></span>
+                            <span>متن</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="message_type" value="image">
+                            <span class="radio-custom"></span>
+                            <span>تصویر</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="message_type" value="file">
+                            <span class="radio-custom"></span>
+                            <span>فایل</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="message-content" class="form-label">
+                        <i class="fas fa-align-right"></i>
+                        متن پیام
+                    </label>
+                    <textarea
+                        id="message-content"
+                        name="message"
+                        class="form-control textarea-control"
+                        rows="6"
+                        maxlength="4096"
+                        placeholder="متن پیام خود را وارد کنید..."
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="char-count">0</span> / 4096 کاراکتر
+                    </div>
+                </div>
+
+                <div class="form-group" id="file-upload-group" style="display: none;">
+                    <label for="file-upload" class="form-label">
+                        <i class="fas fa-upload"></i>
+                        آپلود فایل
+                    </label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="file-upload" name="attachment" class="file-input">
+                        <label for="file-upload" class="file-upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>فایل را انتخاب کنید یا اینجا بکشید</span>
+                        </label>
+                        <div id="file-preview" class="file-preview"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipients" class="form-label">
+                        <i class="fas fa-users"></i>
+                        مخاطبین
+                    </label>
+                    <textarea
+                        id="recipients"
+                        name="recipients"
+                        class="form-control textarea-control"
+                        rows="4"
+                        placeholder="شماره تلفن مخاطبین را وارد کنید (هر شماره در یک خط)"
+                        required
+                    ></textarea>
+                    <div class="recipients-info">
+                        <span id="recipients-count">0</span> مخاطب
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-file-import"></i>
+                        وارد کردن از فایل
+                    </label>
+                    <div class="import-wrapper">
+                        <input type="file" id="import-file" accept=".txt,.csv" class="file-input">
+                        <label for="import-file" class="import-label">
+                            <i class="fas fa-file-csv"></i>
+                            <span>انتخاب فایل TXT یا CSV</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-clock"></i>
+                        زمان‌بندی ارسال
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="schedule_type" value="immediate" checked>
+                            <span class="radio-custom"></span>
+                            <span>ارسال فوری</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="schedule_type" value="scheduled">
+                            <span class="radio-custom"></span>
+                            <span>زمان‌بندی شده</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="schedule-datetime-group" style="display: none;">
+                    <label for="schedule-datetime" class="form-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        تاریخ و زمان ارسال
+                    </label>
+                    <input
+                        type="datetime-local"
+                        id="schedule-datetime"
+                        name="scheduled_at"
+                        class="form-control"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="delay" class="form-label">
+                        <i class="fas fa-hourglass-half"></i>
+                        تأخیر بین پیام‌ها (ثانیه)
+                    </label>
+                    <input
+                        type="number"
+                        id="delay"
+                        name="delay"
+                        class="form-control"
+                        min="0"
+                        max="60"
+                        value="2"
+                        placeholder="2"
+                    >
+                    <small class="form-hint">برای جلوگیری از محدودیت پلتفرم</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>ارسال پیام‌ها</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="preview-btn">
+                        <i class="fas fa-eye"></i>
+                        <span>پیش‌نمایش</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-card">
+                <div class="preview-header">
+                    <h3 class="preview-title">
+                        <i class="fas fa-mobile-alt"></i>
+                        پیش‌نمایش پیام
+                    </h3>
+                </div>
+                <div class="preview-body">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="message-bubble" id="preview-message">
+                                <p class="preview-placeholder">پیام شما اینجا نمایش داده می‌شود...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">تعداد مخاطبین</div>
+                        <div class="stat-value" id="stat-recipients">0</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">زمان تقریبی</div>
+                        <div class="stat-value" id="stat-time">0 دقیقه</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">هزینه تقریبی</div>
+                        <div class="stat-value" id="stat-cost">رایگان</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="progress-modal" class="modal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">در حال ثبت و ارسال پیام‌ها</h3>
+        </div>
+        <div class="modal-body">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progress-current">0</span> از <span id="progress-total">0</span> مورد پردازش شد
+                </div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                    <span>موفق: <strong id="progress-success">0</strong></span>
+                </div>
+                <div class="progress-stat">
+                    <i class="fas fa-times-circle" style="color: var(--danger-color);"></i>
+                    <span>ناموفق: <strong id="progress-failed">0</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/messaging-bulk-send.js' %}"></script>
+{% endblock %}

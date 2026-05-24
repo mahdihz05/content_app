@@ -1,0 +1,114 @@
+/* AI MINIMAL UI - CAMPAIGN LIST */
+
+.campaign-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+/* GRID */
+
+.campaign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+}
+
+/* DEFAULT CARD */
+
+.campaign-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 22px;
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    cursor: pointer;
+    transition: 0.25s ease;
+
+    position: relative;
+    overflow: hidden;
+
+    backdrop-filter: blur(20px);
+}
+
+.campaign-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+.campaign-card::before {
+    content: "";
+    width: 110px;
+    height: 110px;
+    background: var(--glow-color);
+    opacity: 0.12;
+    border-radius: 50%;
+    position: absolute;
+    top: -40px;
+    right: -40px;
+}
+
+.campaign-card h3 {
+    color: var(--text-primary);
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+/* STATUS */
+
+.campaign-status {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    width: fit-content;
+    border: 1px solid transparent;
+}
+
+/* STATUS COLORS */
+
+.status-active {
+    background: rgba(14,165,233,0.12);
+    color: var(--accent-color);
+    border-color: var(--border-color);
+}
+
+.status-draft {
+    background: rgba(255,193,7,0.12);
+    color: #facc15;
+    border-color: rgba(255,193,7,0.25);
+}
+
+/* ADD NEW CAMPAIGN CARD */
+
+.add-card {
+    border: 2px dashed var(--border-color);
+    background: rgba(14,165,233,0.06);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 38px;
+    color: var(--accent-color);
+
+    transition: 0.25s ease;
+}
+
+.add-card span {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.add-card:hover {
+    background: rgba(14,165,233,0.12);
+    border-color: var(--accent-color);
+}

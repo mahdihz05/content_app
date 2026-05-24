@@ -1,0 +1,95 @@
+<!-- templates/dashboard/messaging_automation/ai_chat.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}چت با AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/ai-chat.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-content">
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+            <div class="sidebar-section">
+                <h3>پیشنهادهای سریع</h3>
+                <div class="quick-prompts">
+                    <button class="prompt-btn">چطور یک کمپین ارسال انبوه ایجاد کنم؟</button>
+                    <button class="prompt-btn">بهترین زمان برای ارسال پیام چیست؟</button>
+                    <button class="prompt-btn">چطور پاسخگویی خودکار تنظیم کنم؟</button>
+                    <button class="prompt-btn">نحوه مدیریت لیست مخاطبین</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>نکات مفید</h3>
+                <ul class="tips-list">
+                    <li>از پیام‌های شخصی‌سازی شده استفاده کنید</li>
+                    <li>زمان‌بندی ارسال را بهینه کنید</li>
+                    <li>محتوای پیام‌ها را کوتاه و مفید نگه دارید</li>
+                    <li>از ارسال اسپم خودداری کنید</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Chat -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    دستیار هوشمند
+                </h2>
+                <button class="clear-chat-btn" id="clear-chat-btn">پاک کردن چت</button>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="empty-state" id="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <circle cx="9" cy="10" r="1"></circle>
+                        <circle cx="15" cy="10" r="1"></circle>
+                        <path d="M9 14s1 1 3 1 3-1 3-1"></path>
+                    </svg>
+                    <h3>سلام! چطور می‌تونم کمکتون کنم؟</h3>
+                    <p>می‌تونید در مورد تنظیم کمپین‌ها، بهینه‌سازی پیام‌ها، یا هر سوال دیگه‌ای از من بپرسید.</p>
+                </div>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="message-avatar">🤖</div>
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <textarea
+                        id="chat-input"
+                        class="chat-input"
+                        placeholder="پیام خود را بنویسید..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="send-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        ارسال
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/ai-chat.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,330 @@
+<!-- messaging_automation/campaign_create.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}ایجاد کمپین جدید{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging.css' %}">
+<link rel="stylesheet" href="{% static 'assets/styles/campaign_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messaging-container">
+    <!-- Header -->
+    <div class="messaging-header">
+        <div class="header-content">
+            <div class="header-title">
+                <a href="{% url 'messaging-account-list-page' %}" class="back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <i class="fas fa-plus-circle"></i>
+                <h1>ایجاد کمپین جدید</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-label">اطلاعات پایه</div>
+        </div>
+        <div class="step" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-label">انتخاب اکانت</div>
+        </div>
+        <div class="step" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-label">محتوای پیام</div>
+        </div>
+        <div class="step" data-step="4">
+            <div class="step-number">4</div>
+            <div class="step-label">تنظیمات ارسال</div>
+        </div>
+        <div class="step" data-step="5">
+            <div class="step-number">5</div>
+            <div class="step-label">بررسی نهایی</div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="campaign-form-container">
+        <form id="campaignForm">
+            <!-- Step 1: Basic Info -->
+            <div class="form-step active" data-step="1">
+                <div class="form-card">
+                    <h2>اطلاعات پایه کمپین</h2>
+
+                    <div class="form-group">
+                        <label for="campaignName">نام کمپین *</label>
+                        <input type="text" id="campaignName" name="name" required
+                               placeholder="مثال: کمپین تبلیغاتی محصول جدید">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="campaignDescription">توضیحات</label>
+                        <textarea id="campaignDescription" name="description" rows="4"
+                                  placeholder="توضیحات کوتاهی درباره هدف این کمپین..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="campaignPlatform">پلتفرم *</label>
+                            <select id="campaignPlatform" name="platform" required>
+                                <option value="">انتخاب کنید</option>
+                                <option value="instagram">اینستاگرام</option>
+                                <option value="telegram">تلگرام</option>
+                                <option value="whatsapp">واتساپ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="campaignType">نوع کمپین *</label>
+                            <select id="campaignType" name="type" required>
+                                <option value="">انتخاب کنید</option>
+                                <option value="direct">پیام مستقیم</option>
+                                <option value="bulk">ارسال انبوه</option>
+                                <option value="scheduled">زمان‌بندی شده</option>
+                                <option value="triggered">رویداد محور</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Select Account -->
+            <div class="form-step" data-step="2">
+                <div class="form-card">
+                    <h2>انتخاب اکانت ارسال‌کننده</h2>
+
+                    <div class="accounts-grid" id="accountsGrid">
+                        <!-- Accounts will be loaded here -->
+                    </div>
+
+                    <div class="no-accounts" id="noAccounts" style="display: none;">
+                        <i class="fas fa-user-slash"></i>
+                        <p>هیچ اکانتی برای این پلتفرم یافت نشد</p>
+                        <a href="{% url 'messaging-account-create-page' %}" class="btn btn-secondary">
+                            <i class="fas fa-plus"></i>
+                            افزودن اکانت
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Message Content -->
+            <div class="form-step" data-step="3">
+                <div class="form-card">
+                    <h2>محتوای پیام</h2>
+
+                    <div class="message-editor">
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn" data-action="emoji">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button type="button" class="toolbar-btn" data-action="variable">
+                                <i class="fas fa-code"></i>
+                                متغیرها
+                            </button>
+                            <button type="button" class="toolbar-btn" data-action="ai">
+                                <i class="fas fa-magic"></i>
+                                تولید با AI
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="messageContent">متن پیام *</label>
+                            <textarea id="messageContent" name="message" rows="8" required
+                                      placeholder="متن پیام خود را بنویسید...&#10;&#10;می‌توانید از متغیرها استفاده کنید:&#10;{name} - نام مخاطب&#10;{username} - نام کاربری&#10;{custom} - فیلد سفارشی"></textarea>
+                            <div class="char-counter">
+                                <span id="charCount">0</span> / 2000 کاراکتر
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>رسانه (اختیاری)</label>
+                            <div class="media-upload">
+                                <input type="file" id="mediaFile" name="media" accept="image/*,video/*" style="display: none;">
+                                <button type="button" class="upload-btn" onclick="document.getElementById('mediaFile').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>آپلود تصویر یا ویدیو</span>
+                                </button>
+                                <div id="mediaPreview" class="media-preview" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="message-preview">
+                            <h4>پیش‌نمایش پیام</h4>
+                            <div class="preview-box" id="messagePreview">
+                                <p class="preview-placeholder">پیش‌نمایش پیام اینجا نمایش داده می‌شود...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Send Settings -->
+            <div class="form-step" data-step="4">
+                <div class="form-card">
+                    <h2>تنظیمات ارسال</h2>
+
+                    <div class="form-group">
+                        <label>زمان ارسال</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="sendTime" value="now" checked>
+                                <span>ارسال فوری</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sendTime" value="scheduled">
+                                <span>زمان‌بندی شده</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="scheduleGroup" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="scheduleDate">تاریخ</label>
+                                <input type="date" id="scheduleDate" name="schedule_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="scheduleTime">ساعت</label>
+                                <input type="time" id="scheduleTime" name="schedule_time">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipientSource">منبع مخاطبین *</label>
+                        <select id="recipientSource" name="recipient_source" required>
+                            <option value="">انتخاب کنید</option>
+                            <option value="manual">وارد کردن دستی</option>
+                            <option value="file">آپلود فایل</option>
+                            <option value="followers">فالوورها</option>
+                            <option value="segment">بخش خاص</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="manualRecipients" style="display: none;">
+                        <label for="recipientsList">لیست مخاطبین (هر خط یک نفر)</label>
+                        <textarea id="recipientsList" name="recipients" rows="6"
+                                  placeholder="@username1&#10;@username2&#10;@username3"></textarea>
+                    </div>
+
+                    <div class="form-group" id="fileRecipients" style="display: none;">
+                        <label>آپلود فایل مخاطبین (CSV, TXT)</label>
+                        <input type="file" id="recipientsFile" name="recipients_file" accept=".csv,.txt">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sendDelay">تاخیر بین پیام‌ها (ثانیه)</label>
+                            <input type="number" id="sendDelay" name="delay" value="5" min="1" max="60">
+                            <small>برای جلوگیری از اسپم، حداقل 3 ثانیه توصیه می‌شود</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maxMessages">حداکثر پیام در روز</label>
+                            <input type="number" id="maxMessages" name="max_messages" value="100" min="1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="auto_reply" id="autoReply">
+                            <span>فعال‌سازی پاسخ خودکار</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" id="autoReplyGroup" style="display: none;">
+                        <label for="autoReplyText">متن پاسخ خودکار</label>
+                        <textarea id="autoReplyText" name="auto_reply_text" rows="4"
+                                  placeholder="متن پاسخ خودکار به پیام‌های دریافتی..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Review -->
+            <div class="form-step" data-step="5">
+                <div class="form-card">
+                    <h2>بررسی نهایی</h2>
+
+                    <div class="review-section">
+                        <div class="review-item">
+                            <h4>اطلاعات کمپین</h4>
+                            <div class="review-content" id="reviewBasicInfo"></div>
+                        </div>
+
+                        <div class="review-item">
+                            <h4>اکانت ارسال‌کننده</h4>
+                            <div class="review-content" id="reviewAccount"></div>
+                        </div>
+
+                        <div class="review-item">
+                            <h4>محتوای پیام</h4>
+                            <div class="review-content" id="reviewMessage"></div>
+                        </div>
+
+                        <div class="review-item">
+                            <h4>تنظیمات ارسال</h4>
+                            <div class="review-content" id="reviewSettings"></div>
+                        </div>
+                    </div>
+
+                    <div class="warning-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <strong>توجه:</strong>
+                            <p>لطفاً قبل از ارسال، تمام اطلاعات را با دقت بررسی کنید. پس از شروع کمپین، امکان ویرایش برخی تنظیمات وجود ندارد.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Navigation -->
+            <div class="form-navigation">
+                <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+                    <i class="fas fa-arrow-right"></i>
+                    قبلی
+                </button>
+                <button type="button" class="btn btn-primary" id="nextBtn">
+                    بعدی
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                    <i class="fas fa-check"></i>
+                    ایجاد کمپین
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- AI Content Generator Modal -->
+<div class="modal" id="aiModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>تولید محتوا با AI</h3>
+            <button type="button" class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="aiPrompt">توضیح دهید چه پیامی می‌خواهید:</label>
+                <textarea id="aiPrompt" rows="4"
+                          placeholder="مثال: یک پیام تبلیغاتی برای معرفی محصول جدید بنویس که دوستانه و جذاب باشد"></textarea>
+            </div>
+            <button type="button" class="btn btn-primary" id="generateAI">
+                <i class="fas fa-magic"></i>
+                تولید محتوا
+            </button>
+            <div id="aiResult" class="ai-result" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/campaign_form.js' %}"></script>
+{% endblock %}

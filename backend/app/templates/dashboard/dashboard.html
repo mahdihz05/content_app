@@ -1,0 +1,102 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_title %}
+داشبورد
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/styles/dashboard.css' %}">
+
+<div class="dashboard-container">
+
+    <!-- KPI CARDS -->
+    <div class="cards">
+
+        <div class="card ai-card">
+            <h3>تعداد محتوا</h3>
+            <p>24</p>
+        </div>
+
+        <div class="card ai-card">
+            <h3>پروژه فعال</h3>
+            <p>6</p>
+        </div>
+
+        <div class="card ai-card">
+            <h3>در انتظار بررسی</h3>
+            <p>3</p>
+        </div>
+
+    </div>
+
+    <!-- CHART WIDGETS -->
+    <div class="dashboard-widgets">
+
+        <div class="widget widget-large ai-panel">
+            <h3>روند تولید محتوا</h3>
+            <canvas id="contentTrend"></canvas>
+        </div>
+
+        <div class="widget widget-small ai-panel">
+            <h3>پلتفرم‌ها</h3>
+            <canvas id="platformChart"></canvas>
+        </div>
+
+        <div class="widget widget-small ai-panel">
+            <h3>فعالیت هفتگی</h3>
+            <canvas id="weeklyChart"></canvas>
+        </div>
+
+        <div class="widget widget-wide ai-panel">
+            <h3>رشد کلمات کلیدی</h3>
+            <canvas id="keywordGrowth"></canvas>
+        </div>
+
+        <div class="widget widget-small ai-panel">
+            <h3>وضعیت محتوا</h3>
+            <canvas id="contentStatus"></canvas>
+        </div>
+
+    </div>
+
+
+    <!-- RECENT ACTIVITY -->
+    <div class="panel-box ai-panel">
+        <h3>فعالیت اخیر</h3>
+
+        <div class="activity-list">
+
+            <div class="activity-item">
+                <span class="activity-dot"></span>
+                <p>مقاله جدید برای کمپین Cloud Computing تولید شد.</p>
+            </div>
+
+            <div class="activity-item">
+                <span class="activity-dot"></span>
+                <p>تحلیل تحقیق کلمات کلیدی تکمیل شد.</p>
+            </div>
+
+            <div class="activity-item">
+                <span class="activity-dot"></span>
+                <p>۳ محتوای جدید در انتظار بررسی هستند.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FLOATING CHAT BUTTON -->
+
+<a href="/ai/chat/" class="chatbot-btn">
+    💬
+</a>
+
+<script src="{% static 'assets/scripts/dashboard.js' %}"></script>
+
+{% endblock %}

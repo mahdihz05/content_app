@@ -1,0 +1,20 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}لیست کمپین‌ها{% endblock %}
+
+{% block page_title %}
+لیست کمپین‌ها
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/styles/campaign_list.css' %}">
+
+<div class="campaign-wrapper">
+    <div id="campaignGrid" class="campaign-grid"></div>
+</div>
+
+<script src="{% static 'assets/scripts/campaign_list.js' %}"></script>
+
+{% endblock %}

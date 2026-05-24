@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-u#t44!c5w6@y85v%0&zm1fq+^d@(71(t*)5wagcd-emdejt&58
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'user',
+    'dashboard',
+    'campaigns',
+    'platforms',
+    'content',
+    'ai',
+    'research',
+    'messaging_automation'
+
 ]
 
 MIDDLEWARE = [
@@ -47,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'main.settings.cors_middleware'
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -54,10 +64,13 @@ ROOT_URLCONF = 'main.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
+
         'APP_DIRS': True,
+
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -83,6 +96,12 @@ DATABASES = {
         'PORT': os.environ.get('DATABASE_PORT', '5432'),
     }
 }
+
+AUTH_USER_MODEL = 'user.CustomUser'
+AUTHENTICATION_BACKENDS = [
+    'user.CustomAuthBackend.CustomAuthBackend',
+]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -118,9 +137,74 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGIN_URL = '/auth/login'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = '/auth/login/'
+
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+def cors_middleware(get_response):
+    def middleware(request):
+        from django.http import HttpResponse
+
+        # پاسخ به preflight
+        if request.method == "OPTIONS":
+            response = HttpResponse()
+        else:
+            response = get_response(request)
+
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "*"
+        response["Access-Control-Allow-Credentials"] = "true"
+
+        return response
+
+    return middleware
+
+
+AI_API_KEY='sk-TFnTiM7cLOYZ3vWWOl8C6i3vt35u2xTMUjp5iZ1Zv4Q40frt'
+OPENAI_API_KEY='sk-TFnTiM7cLOYZ3vWWOl8C6i3vt35u2xTMUjp5iZ1Zv4Q40frt'
+
+
+SELENIUM_HUB_URL = 'http://selenium:4444/wd/hub'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+    },
+    'loggers': {
+        'messaging_automation': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
+
+
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+
+CELERY_ACCEPT_CONTENT = ['json']
+
+CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_TIMEZONE = 'Asia/Tehran'
+

@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}محتواهای کمپین{% endblock %}
+
+{% block page_title %}
+محتواهای کمپین
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/styles/campaign_content_items.css' %}">
+
+<div class="content-grid" id="contentItems"></div>
+
+<!-- Modal (بدون تغییر) -->
+<div id="createModal" class="modal">
+<div class="modal-box">
+
+<h3>ایجاد محتوای جدید</h3>
+
+<div class="form-group">
+<label>عنوان</label>
+<input id="title" type="text">
+</div>
+
+<div class="form-group">
+<label>کلمات کلیدی</label>
+<input id="keywords" type="text">
+</div>
+
+<div class="form-group">
+<label>توضیحات</label>
+<textarea id="description"></textarea>
+</div>
+
+<div class="modal-actions">
+<button class="secondary-btn" onclick="closeCreateModal()">انصراف</button>
+<button class="primary-btn" onclick="createContentItem()">ایجاد محتوا</button>
+</div>
+
+</div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/campaign_content_items.js' %}"></script>
+{% endblock %}

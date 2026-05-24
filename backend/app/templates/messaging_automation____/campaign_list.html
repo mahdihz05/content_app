@@ -1,0 +1,128 @@
+<!-- messaging_automation/campaign_list.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}لیست کمپین‌های پیام‌رسانی{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messaging-container">
+    <!-- Header -->
+    <div class="messaging-header">
+        <div class="header-content">
+            <div class="header-title">
+                <i class="fas fa-paper-plane"></i>
+                <h1>کمپین‌های پیام‌رسانی</h1>
+            </div>
+            <a href="{% url 'messaging-account-create-page' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                کمپین جدید
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalCampaigns">0</h3>
+                <p>کل کمپین‌ها</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="activeCampaigns">0</h3>
+                <p>کمپین‌های فعال</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalMessages">0</h3>
+                <p>پیام‌های ارسالی</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="successRate">0%</h3>
+                <p>نرخ موفقیت</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="جستجوی کمپین...">
+        </div>
+
+        <div class="filter-group">
+            <select id="statusFilter" class="filter-select">
+                <option value="">همه وضعیت‌ها</option>
+                <option value="active">فعال</option>
+                <option value="paused">متوقف شده</option>
+                <option value="completed">تکمیل شده</option>
+                <option value="draft">پیش‌نویس</option>
+            </select>
+
+            <select id="platformFilter" class="filter-select">
+                <option value="">همه پلتفرم‌ها</option>
+                <option value="instagram">اینستاگرام</option>
+                <option value="telegram">تلگرام</option>
+                <option value="whatsapp">واتساپ</option>
+            </select>
+
+            <select id="sortFilter" class="filter-select">
+                <option value="newest">جدیدترین</option>
+                <option value="oldest">قدیمی‌ترین</option>
+                <option value="most_messages">بیشترین پیام</option>
+                <option value="highest_rate">بالاترین نرخ موفقیت</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Campaigns List -->
+    <div class="campaigns-list" id="campaignsList">
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState">
+            <div class="spinner"></div>
+            <p>در حال بارگذاری کمپین‌ها...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <i class="fas fa-paper-plane"></i>
+            <h3>هنوز کمپینی ایجاد نشده</h3>
+            <p>برای شروع، اولین کمپین پیام‌رسانی خود را ایجاد کنید</p>
+            <a href="{% url 'messaging-account-create-page' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                ایجاد کمپین
+            </a>
+        </div>
+
+        <!-- Campaigns will be loaded here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/messaging_campaigns.js' %}"></script>
+{% endblock %}

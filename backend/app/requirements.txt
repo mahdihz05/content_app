@@ -15,3 +15,5 @@ webdriver-manager
 celery
 redis
 django-celery-beat
+
+openai

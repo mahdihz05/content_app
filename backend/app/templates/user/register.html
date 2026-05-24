@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت نام</title>
+    <link rel="stylesheet" href="{% static 'assets/styles/register_styles.css' %}">
+    <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url("{% static 'fonts/Vazirmatn-Regular.woff2' %}") format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2 class="form-title">ثبت نام</h2>
+            <p class="form-subtitle">به جمع ما بپیوندید!</p>
+            <form id="register-form" method="post" action="{% url 'register-api-v1' %}" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">نام کاربری</label>
+                    <input type="text" id="username" name="username" required placeholder="نام کاربری خود را وارد کنید" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">شماره تلفن</label>
+                    <input type="text" id="phone_number" name="phone_number" required placeholder="مثال: 09123456789" autocomplete="tel">
+                </div>
+                <div class="form-group">
+                    <label for="password">رمز عبور</label>
+                    <input type="password" id="password" name="password" required placeholder="رمز عبور قوی انتخاب کنید" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="password_confirm">تکرار رمز عبور</label>
+                    <input type="password" id="password_confirm" name="password_confirm" required placeholder="تکرار رمز عبور" autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="submit-button">
+                    <span class="spinner"></span>
+                    <span class="button-text">ثبت نام</span>
+                </button>
+
+                <p class="switch-form-text">
+                    حساب کاربری دارید؟
+                    <a href="{% url 'login' %}" class="switch-form-link">وارد شوید</a>
+                </p>
+            </form>
+        </div>
+        <div class="image-container">
+            <svg class="modern-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-13h2v6h-2V9zm0 8h2v2h-2v-2z" fill="currentColor"/>
+            </svg>
+            <h3 class="image-container-title">به دنیای هوش مصنوعی خوش آمدید!</h3>
+            <p class="image-container-subtitle">تجربه کاربری مدرن و روان.</p>
+        </div>
+    </div>
+
+    <script src="{% static 'assets/scripts/js/script_register.js' %}"></script>
+    <script>
+     document.getElementById('register-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const submitBtn = form.querySelector("button[type='submit']");
+    const formData = new FormData(form);
+
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+
+    try {
+
+        const response = await fetch(form.action, {
+            method: form.method,
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+
+            if (result.redirect) {
+                window.location.href = result.redirect;
+                return;
+            }
+
+            alert("ثبت نام با موفقیت انجام شد");
+
+        } else {
+
+            if (typeof result.error === "object") {
+                alert(Object.values(result.error).join("\n"));
+            } else {
+                alert(result.error || "خطا در ثبت نام");
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+        alert("خطا در ارسال درخواست");
+
+    } finally {
+
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+
+    }
+});
+
+    </script>
+</body>
+</html>

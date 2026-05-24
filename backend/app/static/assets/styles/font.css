@@ -1,0 +1,72 @@
+/* -------------------------------------------
+   VAZIR FONT PACKAGE (ALL WEIGHTS)
+   Location: /static/assets/fonts/vazir-font/
+   ------------------------------------------- */
+
+/* Vazir Thin */
+@font-face {
+    font-family: "Vazir";
+    src: url("../fonts/vazir-font/Vazir-Thin.eot");
+    src: url("../fonts/vazir-font/Vazir-Thin.eot?#iefix") format("embedded-opentype"),
+         url("../fonts/vazir-font/Vazir-Thin.woff2") format("woff2"),
+         url("../fonts/vazir-font/Vazir-Thin.woff") format("woff"),
+         url("../fonts/vazir-font/Vazir-Thin.ttf") format("truetype");
+    font-weight: 100;
+    font-style: normal;
+}
+
+/* Vazir Light */
+@font-face {
+    font-family: "Vazir";
+    src: url("../fonts/vazir-font/Vazir-Light.eot");
+    src: url("../fonts/vazir-font/Vazir-Light.eot?#iefix") format("embedded-opentype"),
+         url("../fonts/vazir-font/Vazir-Light.woff2") format("woff2"),
+         url("../fonts/vazir-font/Vazir-Light.woff") format("woff"),
+         url("../fonts/vazir-font/Vazir-Light.ttf") format("truetype");
+    font-weight: 300;
+    font-style: normal;
+}
+
+/* Vazir Regular */
+@font-face {
+    font-family: "Vazir";
+    src: url("../fonts/vazir-font/Vazir.eot");
+    src: url("../fonts/vazir-font/Vazir.eot?#iefix") format("embedded-opentype"),
+         url("../fonts/vazir-font/Vazir.woff2") format("woff2"),
+         url("../fonts/vazir-font/Vazir.woff") format("woff"),
+         url("../fonts/vazir-font/Vazir.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Vazir Medium */
+@font-face {
+    font-family: "Vazir";
+    src: url("../fonts/vazir-font/Vazir-Medium.eot");
+    src: url("../fonts/vazir-font/Vazir-Medium.eot?#iefix") format("embedded-opentype"),
+         url("../fonts/vazir-font/Vazir-Medium.woff2") format("woff2"),
+         url("../fonts/vazir-font/Vazir-Medium.woff") format("woff"),
+         url("../fonts/vazir-font/Vazir-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+}
+
+/* Vazir Bold */
+@font-face {
+    font-family: "Vazir";
+    src: url("../fonts/vazir-font/Vazir-Bold.eot");
+    src: url("../fonts/vazir-font/Vazir-Bold.eot?#iefix") format("embedded-opentype"),
+         url("../fonts/vazir-font/Vazir-Bold.woff2") format("woff2"),
+         url("../fonts/vazir-font/Vazir-Bold.woff") format("woff"),
+         url("../fonts/vazir-font/Vazir-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* -------------------------------------------
+   APPLY FONT GLOBALLY
+   ------------------------------------------- */
+
+* {
+    font-family: vazir, "Vazir" !important;
+}

@@ -1,0 +1,138 @@
+<!-- templates/dashboard/messaging_automation/account_list.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}اکانت‌های متصل{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-content">
+    <div class="page-header">
+        <div>
+            <h1>اکانت‌های متصل</h1>
+            <p class="page-description">مدیریت اکانت‌های پیام‌رسان متصل به سیستم</p>
+        </div>
+        <a href="{% url 'messaging-account-create-page' %}" class="btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            افزودن اکانت جدید
+        </a>
+    </div>
+
+    <div class="accounts-toolbar">
+
+        <input
+            type="text"
+            id="search-input"
+            placeholder="جستجو..."
+            class="form-input"
+        >
+
+        <select
+            id="platform-filter"
+            class="form-select"
+        >
+            <option value="">همه پلتفرم‌ها</option>
+            <option value="telegram">تلگرام</option>
+            <option value="whatsapp">واتساپ</option>
+            <option value="bale">بله</option>
+        </select>
+
+    </div>
+
+    <div class="accounts-stats">
+
+        <div class="stat-box">
+            تلگرام:
+            <span id="telegram-count">0</span>
+        </div>
+
+        <div class="stat-box">
+            واتساپ:
+            <span id="whatsapp-count">0</span>
+        </div>
+
+        <div class="stat-box">
+            بله:
+            <span id="bale-count">0</span>
+        </div>
+
+        <div class="stat-box">
+            فعال:
+            <span id="active-count">0</span>
+        </div>
+
+    </div>
+
+    <div class="accounts-grid">
+
+        <table class="accounts-table">
+
+            <thead>
+                <tr>
+                    <th>نام</th>
+                    <th>پلتفرم</th>
+                    <th>شناسه</th>
+                    <th>تلفن</th>
+                    <th>وضعیت</th>
+                    <th>تاریخ</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+
+            <tbody id="accounts-tbody">
+
+                <tr>
+                    <td colspan="7">
+                        در حال بارگذاری...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+        <div
+            id="empty-state"
+            style="display:none;"
+        >
+            اکانتی یافت نشد
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal برای ذخیره Session -->
+<div class="modal" id="session-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>ذخیره Session</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+                برای ذخیره Session، ابتدا از طریق VNC به مرورگر متصل شوید، لاگین کنید و سپس داده Session را در اینجا وارد کنید.
+            </p>
+            <textarea
+                id="session-data"
+                placeholder="داده Session را اینجا وارد کنید..."
+                rows="8"
+                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-family: monospace; font-size: 13px; resize: vertical;"
+            ></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary modal-close">انصراف</button>
+            <button class="btn-primary" id="save-session-btn">ذخیره Session</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/account-list.js' %}"></script>
+{% endblock %}

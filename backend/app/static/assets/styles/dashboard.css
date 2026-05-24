@@ -1,0 +1,359 @@
+/* ===============================
+   DASHBOARD CONTAINER
+================================ */
+
+.dashboard-container{
+display:flex;
+flex-direction:column;
+gap:26px;
+width:100%;
+}
+
+
+/* ===============================
+   KPI CARDS
+================================ */
+
+.cards{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+gap:20px;
+
+}
+
+.ai-card{
+
+background:var(--card-bg);
+
+border:1px solid var(--border-color);
+
+border-radius:18px;
+
+padding:24px;
+
+position:relative;
+
+overflow:hidden;
+
+transition:all .25s ease;
+
+backdrop-filter:blur(20px);
+
+}
+
+.ai-card::before{
+
+content:"";
+
+position:absolute;
+
+width:120px;
+height:120px;
+
+background:var(--glow-color);
+
+opacity:.15;
+
+border-radius:50%;
+
+top:-40px;
+right:-40px;
+
+}
+
+.ai-card:hover{
+
+transform:translateY(-6px);
+
+border-color:var(--accent-color);
+
+box-shadow:0 12px 35px var(--shadow-color);
+
+}
+
+.ai-card h3{
+
+color:var(--text-muted);
+
+font-size:14px;
+
+margin-bottom:10px;
+
+font-weight:500;
+
+}
+
+.ai-card p{
+
+font-size:34px;
+
+font-weight:700;
+
+color:var(--text-primary);
+
+letter-spacing:.5px;
+
+}
+
+
+/* ===============================
+   PANELS
+================================ */
+
+.ai-panel{
+
+background:var(--card-bg);
+
+border-radius:18px;
+
+border:1px solid var(--border-color);
+
+padding:20px;
+
+backdrop-filter:blur(20px);
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+.ai-panel h3{
+
+margin-bottom:12px;
+
+font-size:15px;
+
+font-weight:600;
+
+color:var(--text-primary);
+
+}
+
+
+/* ===============================
+   DASHBOARD WIDGET GRID
+================================ */
+
+.dashboard-widgets{
+
+display:grid;
+
+grid-template-columns:repeat(6,1fr);
+
+grid-auto-rows:220px;
+
+gap:22px;
+
+}
+
+
+/* ===============================
+   WIDGET
+================================ */
+
+.widget{
+
+position:relative;
+
+border-radius:18px;
+
+padding:18px;
+
+display:flex;
+
+flex-direction:column;
+
+overflow:hidden;
+
+}
+
+.widget canvas{
+
+flex:1;
+
+width:100%;
+
+height:100%;
+
+display:block;
+
+}
+
+
+/* widget sizes */
+
+.widget-large{
+
+grid-column:span 4;
+grid-row:span 2;
+
+}
+
+.widget-wide{
+
+grid-column:span 3;
+grid-row:span 1;
+
+}
+
+.widget-small{
+
+grid-column:span 2;
+grid-row:span 1;
+
+}
+
+
+/* ===============================
+   ACTIVITY LIST
+================================ */
+
+.activity-list{
+
+display:flex;
+
+flex-direction:column;
+
+gap:16px;
+
+}
+
+.activity-item{
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+font-size:14px;
+
+color:var(--text-secondary);
+
+}
+
+.activity-dot{
+
+width:10px;
+height:10px;
+
+border-radius:50%;
+
+background:var(--accent-color);
+
+box-shadow:0 0 12px var(--glow-color);
+
+flex-shrink:0;
+
+}
+
+
+/* ===============================
+   CHAT BUTTON
+================================ */
+
+.chatbot-btn{
+
+position: absolute;
+
+right:24px;
+bottom:24px;
+
+width:64px;
+height:64px;
+
+border-radius:50%;
+
+background:linear-gradient(
+135deg,
+var(--accent-color),
+var(--accent-hover)
+);
+
+color:#fff;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+text-decoration:none;
+
+font-size:28px;
+
+box-shadow:0 12px 30px var(--glow-color);
+
+transition:all .25s ease;
+
+z-index:999;
+
+}
+
+.chatbot-btn:hover{
+
+transform:scale(1.08);
+
+box-shadow:0 16px 40px var(--glow-color);
+
+}
+
+
+/* ===============================
+   TABLET
+================================ */
+
+@media(max-width:1100px){
+
+.dashboard-widgets{
+
+grid-template-columns:repeat(2,1fr);
+
+grid-auto-rows:220px;
+
+}
+
+.widget-large,
+.widget-wide,
+.widget-small{
+
+grid-column:span 2;
+
+}
+
+}
+
+
+/* ===============================
+   MOBILE
+================================ */
+
+@media(max-width:640px){
+
+.cards{
+
+grid-template-columns:1fr;
+
+}
+
+.dashboard-widgets{
+
+grid-template-columns:1fr;
+
+grid-auto-rows:220px;
+
+}
+
+.widget-large,
+.widget-wide,
+.widget-small{
+
+grid-column:span 1;
+
+}
+
+}

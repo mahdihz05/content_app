@@ -1,0 +1,343 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}مدیریت اکانت‌های پیام‌رسان{% endblock %}
+{% block page_title %}مدیریت اکانت‌های پیام‌رسان{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging-accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="accounts-container">
+
+    <div class="page-header">
+        <div class="header-content">
+            <h1>اکانت‌های پیام‌رسان</h1>
+            <p>مدیریت اکانت‌های بله، تلگرام و واتساپ</p>
+        </div>
+
+        <button type="button" class="btn-primary" id="add-account-btn">
+            <svg width="20"
+                 height="20"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+
+            افزودن اکانت جدید
+        </button>
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon bale">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                </svg>
+            </div>
+
+            <div class="stat-info">
+                <h3 id="bale-count">0</h3>
+                <p>اکانت بله</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon telegram">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                </svg>
+            </div>
+
+            <div class="stat-info">
+                <h3 id="telegram-count">0</h3>
+                <p>اکانت تلگرام</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon whatsapp">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967"/>
+                </svg>
+            </div>
+
+            <div class="stat-info">
+                <h3 id="whatsapp-count">0</h3>
+                <p>اکانت واتساپ</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon active">
+                <svg width="24"
+                     height="24"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+            </div>
+
+            <div class="stat-info">
+                <h3 id="active-count">0</h3>
+                <p>اکانت فعال</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="table-container">
+
+        <div class="table-header">
+
+            <h2>لیست اکانت‌ها</h2>
+
+            <div class="table-actions">
+
+                <input type="text"
+                       id="search-input"
+                       placeholder="جستجو..."
+                       class="search-input">
+
+                <!-- اصلاح شد -->
+                <select id="platform-filter" class="filter-select">
+                    <option value="">همه پلتفرم‌ها</option>
+                    <option value="bale">بله</option>
+                    <option value="telegram">تلگرام</option>
+                    <option value="whatsapp">واتساپ</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="table-wrapper">
+
+            <table class="accounts-table">
+
+                <thead>
+                    <tr>
+                        <th>نام اکانت</th>
+                        <th>پلتفرم</th>
+                        <th>شناسه اکانت</th>
+                        <th>شماره تلفن</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ ایجاد</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+
+                <tbody id="accounts-tbody"></tbody>
+
+            </table>
+
+        </div>
+
+        <div class="empty-state"
+             id="empty-state"
+             style="display:none;">
+
+            <h3>هیچ اکانتی یافت نشد</h3>
+            <p>برای شروع، یک اکانت جدید اضافه کنید</p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal" id="account-modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="modal-title">
+                افزودن اکانت جدید
+            </h2>
+
+            <button type="button"
+                    class="modal-close"
+                    id="close-modal">
+                ✕
+            </button>
+
+        </div>
+
+        <form id="account-form" autocomplete="off">
+
+            <input type="hidden"
+                   id="account-id"
+                   name="id">
+
+            <div class="form-group">
+
+                <label for="account-name">
+                    نام اکانت *
+                </label>
+
+                <input type="text"
+                       id="account-name"
+                       name="name"
+                       required
+                       placeholder="مثال: اکانت اصلی">
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="account-platform">
+                    پلتفرم *
+                </label>
+
+                <!-- اصلاح شد -->
+                <select id="account-platform"
+                        name="platform"
+                        required>
+
+                    <option value="">انتخاب کنید</option>
+                    <option value="bale">بله</option>
+                    <option value="telegram">تلگرام</option>
+                    <option value="whatsapp">واتساپ</option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="account-identifier">
+                    شناسه اکانت *
+                </label>
+
+                <input type="text"
+                       id="account-identifier"
+                       name="account_identifier"
+                       required
+                       placeholder="مثال: @username یا شماره">
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="phone-number">
+                    شماره تلفن
+                </label>
+
+                <input type="text"
+                       id="phone-number"
+                       name="phone_number"
+                       placeholder="09123456789"
+                       dir="ltr">
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="api-token">
+                    API Token / Session
+                </label>
+
+                <textarea id="api-token"
+                          name="api_token"
+                          rows="3"></textarea>
+
+            </div>
+
+            <div class="form-group checkbox-group">
+
+                <label>
+
+                    <input type="checkbox"
+                           id="is-active"
+                           name="is_active"
+                           checked>
+
+                    <span>فعال</span>
+
+                </label>
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="btn-secondary"
+                        id="cancel-btn">
+                    انصراف
+                </button>
+
+                <button type="submit"
+                        class="btn-primary"
+                        id="submit-btn">
+                    ذخیره
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal" id="delete-modal">
+
+    <div class="modal-content modal-small">
+
+        <div class="modal-header">
+
+            <h2>تأیید حذف</h2>
+
+            <button type="button"
+                    class="modal-close"
+                    id="close-delete-modal">
+                ✕
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+            <p>
+                آیا از حذف این اکانت اطمینان دارید؟
+                این عملیات قابل بازگشت نیست.
+            </p>
+        </div>
+
+        <div class="modal-actions">
+
+            <button type="button"
+                    class="btn-secondary"
+                    id="cancel-delete-btn">
+                انصراف
+            </button>
+
+            <button type="button"
+                    class="btn-danger"
+                    id="confirm-delete-btn">
+                حذف
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/messaging-accounts.js' %}"></script>
+{% endblock %}

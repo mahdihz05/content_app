@@ -1,22 +1,30 @@
-"""
-URL configuration for main project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+from django.urls import path, include
 from django.contrib import admin
-from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+
+from user.views import register_view, login_view, get_user, get_users, home
+from dashboard.views import test
+from ai.views.landing_view import landing_chat_api, landing_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Apps
+    path('auth/', include('user.urls')),
+    path('dashboard/', include('dashboard.urls')),
+    path('campaign/', include('campaigns.urls')),
+    path('platform/', include('platforms.urls')),
+    path('content/', include('content.urls')),
+    path('research/', include('research.urls')),
+    path('messaging/', include('messaging_automation.urls')),
+    # path('bale/', include('bale_bot.urls')),  # اضافه شد
+
+    # Landing & Test
+    path('', landing_view, name='landing'),
+    path('api/chat/', landing_chat_api, name='landing_chat_api'),
+    path('test/', test, name='test'),
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

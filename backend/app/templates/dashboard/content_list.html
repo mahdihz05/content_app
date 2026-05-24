@@ -1,0 +1,34 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}محتواها{% endblock %}
+{% block page_title %}محتواها{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/content_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="content-page-wrapper">
+
+    <div class="page-header">
+        <h3>لیست محتواها</h3>
+    </div>
+
+    <div id="contentGrid" class="content-grid">
+
+        <a href="{% url 'create-content-page' %}" class="add-card">
+            <div class="add-icon">+</div>
+            <div class="add-text">محتوای جدید</div>
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/scripts/content_list.js' %}"></script>
+{% endblock %}

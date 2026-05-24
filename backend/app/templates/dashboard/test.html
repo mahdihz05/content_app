@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>Campaign API Tester</title>
+
+<style>
+body{
+font-family:sans-serif;
+background:#f0f2f5;
+padding:30px;
+}
+
+h2{
+color:#444;
+margin-top:40px;
+}
+
+button{
+margin:5px;
+padding:8px 16px;
+background:#0078D7;
+color:white;
+border:none;
+border-radius:4px;
+cursor:pointer;
+}
+
+button:hover{
+background:#005ea0;
+}
+
+pre{
+background:#222;
+color:#0f0;
+padding:10px;
+border-radius:4px;
+max-height:300px;
+overflow:auto;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>Campaign API Test Panel</h2>
+
+<button onclick="campaignList()">📋 Campaign List</button>
+<button onclick="campaignDetail()">🔍 Campaign Detail</button>
+<button onclick="createCampaign()">➕ Create Campaign</button>
+<button onclick="editCampaign()">✏️ Edit Campaign Status</button>
+
+<h2>Keyword API Test Panel</h2>
+
+<button onclick="keywordList()">📑 Keyword List</button>
+<button onclick="createKeyword()">➕ Create Keyword</button>
+<button onclick="updateKeyword()">✏️ Update Keyword</button>
+
+<pre id="output">Click any button to test...</pre>
+
+<script>
+
+const baseUrl = "http://localhost:8000/campaign/api/v1";
+
+async function showResponse(res){
+
+const output=document.getElementById("output");
+
+try{
+
+const data=await res.json();
+output.textContent=JSON.stringify(data,null,2);
+
+}catch(e){
+
+const text=await res.text();
+output.textContent="Raw response:\n"+text;
+
+}
+
+}
+
+
+
+
+
+// Campaign APIs
+
+async function campaignList(){
+
+const res=await fetch(`${baseUrl}/campaign_list`,{
+method:"GET",
+credentials:"include"
+});
+
+showResponse(res);
+
+}
+
+
+
+async function campaignDetail(){
+
+const campaignId=1;
+
+const res=await fetch(`${baseUrl}/campaign_detail?campaign_id=${campaignId}`,{
+method:"GET",
+credentials:"include"
+});
+
+showResponse(res);
+
+}
+
+
+
+async function createCampaign(){
+
+const body={
+title:"Test Campaign",
+main_keywords:"seo keywords",
+status:"active"
+};
+
+const res=await fetch(`${baseUrl}/create_campaign`,{
+method:"POST",
+credentials:"include",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+});
+
+showResponse(res);
+
+}
+
+
+
+async function editCampaign(){
+
+const body={
+campaign_id:1,
+status:"paused"
+};
+
+const res=await fetch(`${baseUrl}/edit_campaign`,{
+method:"POST",
+credentials:"include",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+});
+
+showResponse(res);
+
+}
+
+
+
+
+
+// Keyword APIs
+
+async function keywordList(){
+
+const campaignId=1;
+
+const res=await fetch(`${baseUrl}/keyword_list?campaign_id=${campaignId}`,{
+method:"GET",
+credentials:"include"
+});
+
+showResponse(res);
+
+}
+
+
+
+async function createKeyword(){
+
+const body={
+campaign_id:1,
+keyword:"buy laptop",
+source:"google"
+};
+
+const res=await fetch(`${baseUrl}/create_keyword`,{
+method:"POST",
+credentials:"include",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+});
+
+showResponse(res);
+
+}
+
+
+
+async function updateKeyword(){
+
+const body={
+keyword_id:1,
+campaign_id:1,
+keyword:"buy gaming laptop",
+source:"google"
+};
+
+const res=await fetch(`${baseUrl}/update_keyword`,{
+method:"POST",
+credentials:"include",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+});
+
+showResponse(res);
+
+}
+
+</script>
+
+</body>
+</html>

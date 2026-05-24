@@ -1,0 +1,294 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/create_content.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="create-content-wrapper">
+
+    <!-- Stepper / Progress Bar -->
+    <div class="stepper">
+        <div class="step-item" data-step="1">۱. انتخاب کمپین</div>
+        <div class="step-item" data-step="2">۲. اطلاعات پایه محتوا</div>
+        <div class="step-item" data-step="3">۳. اطلاعات تکمیلی تولید</div>
+        <div class="step-item" data-step="4">۴. کلیدواژه‌ها</div>
+
+        <!-- NEW STEP 5 -->
+        <div class="step-item" data-step="5">۵. تحقیق اولیه (AI)</div>
+
+        <div class="step-item" data-step="6">۶. پایگاه دانش</div>
+        <div class="step-item" data-step="7">۷. تایید محتوا</div>
+        <div class="step-item" data-step="8">۸. خروجی نهایی</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <section id="step-1" class="step-section">
+        <h3>مرحله ۱ - انتخاب کمپین</h3>
+        <p class="step-desc">از لیست کمپین‌ها، یکی را برای تولید محتوا انتخاب کنید.</p>
+
+        <div class="table-wrapper">
+            <table class="campaign-table">
+                <thead>
+                    <tr>
+                        <th>انتخاب</th>
+                        <th>عنوان</th>
+                        <th>کلمات کلیدی اصلی</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody id="campaignTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="step-actions">
+            <button class="btn-primary" id="goToStep2Btn" disabled>ادامه به مرحله بعد</button>
+        </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section id="step-2" class="step-section hidden">
+        <h3>مرحله ۲ - اطلاعات پایه محتوا</h3>
+        <p class="step-desc">پلتفرم، هدف و اطلاعات پایه محتوا را مشخص کنید.</p>
+
+        <div class="two-column-layout">
+            <div>
+                <h4>انتخاب پلتفرم</h4>
+                <div id="platformGrid" class="card-grid"></div>
+            </div>
+
+            <div>
+                <h4>انتخاب هدف (Goal)</h4>
+                <div id="goalGrid" class="card-grid"></div>
+            </div>
+        </div>
+
+        <form id="basicContentForm" class="form-layout">
+            <div class="form-group">
+                <label>عنوان محتوا</label>
+                <input type="text" name="title" required>
+            </div>
+            <div class="form-group">
+                <label>کلمه کلیدی اصلی</label>
+                <input type="text" name="main_keyword" required>
+            </div>
+            <div class="form-group">
+                <label>کلمات کلیدی اضافی (با کاما جدا کنید)</label>
+                <input type="text" name="additional_keywords">
+            </div>
+            <div class="form-group">
+                <label>توضیحات</label>
+                <textarea name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>زبان</label>
+                <select name="language">
+                    <option value="fa">فارسی</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="step-actions">
+                <button type="button" class="btn-secondary" data-prev-step="1">بازگشت</button>
+                <button type="submit" class="btn-primary">ایجاد آیتم محتوا و ادامه</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- STEP 3 -->
+    <section id="step-3" class="step-section hidden">
+        <h3>مرحله ۳ - اطلاعات تکمیلی تولید محتوا (فرم پلتفرم)</h3>
+        <p class="step-desc">فیلدهای اختصاصی این پلتفرم را تکمیل کنید.</p>
+
+        <form id="dynamicPlatformForm" class="form-layout">
+            <div id="dynamicFormFields"></div>
+
+            <div class="step-actions">
+                <button type="button" class="btn-secondary" data-prev-step="2">بازگشت</button>
+                <button type="submit" class="btn-primary">ذخیره فرم و ادامه</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- STEP 4 -->
+    <section id="step-4" class="step-section hidden">
+        <h3>مرحله ۴ - کلیدواژه‌ها</h3>
+        <p class="step-desc">کلیدواژه‌های نهایی محتوا را تنظیم کنید.</p>
+
+        <form id="keywordsForm" class="form-layout">
+            <div class="form-group">
+                <label>کلیدواژه‌های اصلی</label>
+                <input id="primaryKeywordInput" type="text" class="keyword-input" placeholder="برای افزودن کلیدواژه اینتر بزنید">
+                <div id="primaryKeywordList" class="keyword-wrapper"></div>
+            </div>
+
+            <div class="form-group">
+                <label>کلیدواژه‌های ثانویه</label>
+                <input id="secondaryKeywordInput" type="text" class="keyword-input" placeholder="برای افزودن کلیدواژه اینتر بزنید">
+                <div id="secondaryKeywordList" class="keyword-wrapper"></div>
+            </div>
+
+            <div class="step-actions">
+                <button type="button" id="aiKeywordSuggestBtn" class="btn-secondary">پیشنهاد کلیدواژه با AI</button>
+            </div>
+
+            <div class="step-actions">
+                <button type="button" class="btn-secondary" data-prev-step="3">بازگشت</button>
+                <button type="submit" class="btn-primary">ذخیره و ادامه</button>
+            </div>
+        </form>
+    </section>
+
+  <!-- STEP 5 (NEW): AI RESEARCH -->
+<section id="step-5" class="step-section hidden">
+    <h3>مرحله ۵ - تحقیق اولیه (AI)</h3>
+    <p class="step-desc">AI عبارات جست‌وجو پیشنهاد می‌دهد. انتخاب کن، و سپس اطلاعات کامل را دریافت کن.</p>
+
+    <!-- تعداد کوئری -->
+    <div class="research-options">
+        <label for="researchQueryCount">تعداد عبارات جست‌وجو:</label>
+        <input
+            type="number"
+            id="researchQueryCount"
+            min="1"
+            max="20"
+            value="5"
+            class="research-count-input"
+        />
+    </div>
+
+    <div id="researchQueryList"></div>
+
+    <div class="step-actions">
+        <button type="button" id="startResearchBtn" class="btn-primary">
+            تولید عناوین جست‌وجو با AI
+        </button>
+
+        <button type="button" id="fetchSelectedResearchBtn" class="btn-secondary hidden">
+            دریافت اطلاعات انتخاب‌شده
+        </button>
+
+        <button type="button" class="btn-secondary" data-prev-step="4">
+            بازگشت
+        </button>
+
+        <button type="button" id="finalizeResearchBtn" class="btn-primary hidden">
+            ادامه به مرحله بعد
+        </button>
+    </div>
+</section>
+
+
+    <!-- STEP 6 -->
+    <section id="step-6" class="step-section hidden">
+
+        <h3>مرحله ۶ - انتخاب منابع دانشی</h3>
+        <p class="step-desc">منابعی که AI برای تولید محتوا استفاده می‌کند را انتخاب کنید.</p>
+
+        <form id="knowledgeBaseForm" class="form-layout">
+
+            <div class="kb-card-grid">
+
+                <label class="kb-card">
+                    <input type="checkbox" name="kb" value="site_faq">
+                    <div class="kb-card-title">FAQ سایت</div>
+                    <div class="kb-card-desc">پرسش‌های متداول کاربران</div>
+                </label>
+
+                <label class="kb-card">
+                    <input type="checkbox" name="kb" value="product_docs">
+                    <div class="kb-card-title">مستندات محصول</div>
+                    <div class="kb-card-desc">راهنمای کامل محصول</div>
+                </label>
+
+                <label class="kb-card">
+                    <input type="checkbox" name="kb" value="blog_posts">
+                    <div class="kb-card-title">مقالات وبلاگ</div>
+                    <div class="kb-card-desc">محتوای آموزشی قبلی</div>
+                </label>
+
+            </div>
+
+            <div class="step-actions">
+                <button type="button" class="btn-secondary" data-prev-step="5">بازگشت</button>
+                <button type="submit" class="btn-primary">ادامه</button>
+            </div>
+
+        </form>
+
+    </section>
+
+    <!-- STEP 7 -->
+    <section id="step-7" class="step-section hidden">
+        <h3>مرحله ۷ - تایید محتوا</h3>
+        <p class="step-desc">تنظیمات نهایی را بررسی و تایید کنید.</p>
+
+        <div id="contentSummaryBox" class="summary-box"></div>
+
+        <div class="step-actions">
+            <button type="button" class="btn-secondary" data-prev-step="6">بازگشت</button>
+            <button id="confirmContentBtn" class="btn-primary">تایید نهایی و تولید</button>
+        </div>
+    </section>
+
+    <!-- STEP 8 -->
+    <section id="step-8" class="step-section hidden enhanced-final-step">
+
+        <h3 class="step-title">مرحله ۸ - خروجی نهایی</h3>
+        <p class="step-desc">محتوای تولید شده همراه با متا، HTML و پرامپت‌های تصویری.</p>
+
+        <div class="final-output-container">
+
+            <!-- Final Content -->
+            <div id="finalOutputBox" class="final-output-box glass-effect">
+                <div class="empty-state hidden" id="finalEmptyState">
+                    <div class="loader-circle"></div>
+                    <p>در حال تولید محتوا...</p>
+                </div>
+            </div>
+
+            <!-- Sidebar (Actions + Extras) -->
+            <aside class="final-sidebar">
+
+                <button class="btn-primary large-btn" id="copyFinalContentBtn">
+                    کپی کل محتوا
+                </button>
+
+                <button class="btn-secondary large-btn" id="downloadHTMLBtn">
+                    دانلود خروجی HTML
+                </button>
+
+                <button class="btn-secondary large-btn" id="copyMetaBtn">
+                    کپی Meta Title & Description
+                </button>
+
+                <button class="btn-secondary large-btn" id="copyImagePromptsBtn">
+                    کپی پرامپت‌های تصاویر
+                </button>
+
+                <a href="/content" class="btn-tertiary large-btn">
+                    بازگشت به لیست محتوا
+                </a>
+            </aside>
+
+        </div>
+
+    </section>
+
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const PLATFORMS = {{ platforms|safe }};
+</script>
+<script src="{% static 'assets/scripts/create_content_api.js' %}"></script>
+<script src="{% static 'assets/scripts/create_content_dynamic_form.js' %}"></script>
+<script src="{% static 'assets/scripts/create_content_stepper.js' %}"></script>
+
+
+{% endblock %}

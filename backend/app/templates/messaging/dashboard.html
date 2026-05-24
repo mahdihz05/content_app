@@ -1,0 +1,184 @@
+<!-- templates/messaging/dashboard.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}داشبورد پیام‌رسانی{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/styles/messaging-dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messaging-dashboard">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-paper-plane"></i>
+                داشبورد پیام‌رسانی
+            </h1>
+            <p class="page-subtitle">مدیریت و نظارت بر سیستم پیام‌رسانی خودکار</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" id="refresh-stats-btn">
+                <i class="fas fa-sync-alt"></i>
+                به‌روزرسانی
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon accounts">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">اکانت‌های فعال</div>
+                <div class="stat-value" id="active-accounts">0</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="accounts-change">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon messages">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">پیام‌های ارسالی امروز</div>
+                <div class="stat-value" id="messages-today">0</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="messages-change">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon campaigns">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">کمپین‌های فعال</div>
+                <div class="stat-value" id="active-campaigns">0</div>
+                <div class="stat-change">
+                    <i class="fas fa-minus"></i>
+                    <span id="campaigns-change">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">نرخ موفقیت</div>
+                <div class="stat-value" id="success-rate">0%</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="success-change">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2 class="section-title">دسترسی سریع</h2>
+        <div class="actions-grid">
+            <a href="{% url 'messaging-accounts' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="action-content">
+                    <h3>مدیریت اکانت‌ها</h3>
+                    <p>مشاهده و مدیریت اکانت‌های متصل</p>
+                </div>
+                <i class="fas fa-arrow-left action-arrow"></i>
+            </a>
+
+            <a href="{% url 'messaging-bulk-send' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="action-content">
+                    <h3>ارسال انبوه</h3>
+                    <p>ارسال پیام به مخاطبین متعدد</p>
+                </div>
+                <i class="fas fa-arrow-left action-arrow"></i>
+            </a>
+
+            <a href="{% url 'messaging-auto-reply' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="action-content">
+                    <h3>پاسخگویی هوشمند</h3>
+                    <p>تنظیم پاسخ‌های خودکار</p>
+                </div>
+                <i class="fas fa-arrow-left action-arrow"></i>
+            </a>
+
+            <a href="#" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="action-content">
+                    <h3>گزارش‌ها</h3>
+                    <p>مشاهده آمار و تحلیل‌ها</p>
+                </div>
+                <i class="fas fa-arrow-left action-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <div class="section-header">
+            <h2 class="section-title">فعالیت‌های اخیر</h2>
+            <a href="#" class="view-all-link">مشاهده همه</a>
+        </div>
+        <div class="activity-list" id="activity-list">
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>در حال بارگذاری...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">پیام‌های ارسالی (7 روز اخیر)</h3>
+                <select class="chart-filter" id="messages-chart-filter">
+                    <option value="7">7 روز</option>
+                    <option value="30">30 روز</option>
+                    <option value="90">90 روز</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="messages-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">توزیع پلتفرم‌ها</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="platforms-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>-->
+<script src="{% static 'assets/scripts/messaging-dashboard.js' %}"></script>
+{% endblock %}

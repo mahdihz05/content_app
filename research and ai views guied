@@ -1,0 +1,416 @@
+:::writing
+# AI Content Platform – Research & AI Layer (MVP Implementation Notes)
+
+این سند توضیح می‌دهد در بخش **Research** و **AI Processing** چه ویوها، سرویس‌ها و پردازش‌هایی باید در آینده پیاده‌سازی شوند. هدف این سند این است که بعداً هنگام توسعه، ساختار مشخص و قابل دنبال کردن وجود داشته باشد.
+
+---
+
+# 1. Research Module Overview
+
+ماژول Research وظیفه دارد برای هر **Content Item** منابع مرتبط را جمع‌آوری، خلاصه‌سازی و آماده استفاده برای تولید محتوا کند.
+
+فلو کلی به شکل زیر است:
+
+Content Item
+→ Start Research
+→ n8n Research Pipeline
+→ دریافت منابع
+→ انتخاب منابع توسط کاربر
+→ ارسال به مرحله Outline
+
+---
+
+# 2. Research Views (API Endpoints)
+
+## 2.1 Start Research
+
+این endpoint فرایند تحقیق را آغاز می‌کند.
+
+Endpoint
+
+POST
+`/api/content/{content_id}/research/start`
+
+وظایف:
+
+1. دریافت ContentItem
+2. ایجاد ResearchJob جدید
+3. ثبت اطلاعات درخواست
+4. ارسال درخواست به n8n webhook
+5. ذخیره external_job_id
+6. تغییر status به running
+
+ورودی نمونه:
+
+```
+{
+  "main_keyword": "لوازم جانبی موبایل",
+  "additional_keywords": ["شارژر", "هدفون", "پاوربانک"]
+}
+```
+
+خروجی:
+
+```
+{
+  "job_id": 21,
+  "status": "pending"
+}
+```
+
+---
+
+## 2.2 Get Research Status
+
+برای بررسی وضعیت job استفاده می‌شود.
+
+Endpoint
+
+GET
+`/api/research/{job_id}`
+
+خروجی:
+
+```
+{
+  "job_id": 21,
+  "status": "running",
+  "sources_count": 0
+}
+```
+
+Status ها:
+
+pending
+running
+success
+failed
+
+---
+
+## 2.3 Get Research Sources
+
+تمام منابع استخراج شده از تحقیق را برمی‌گرداند.
+
+Endpoint
+
+GET
+`/api/research/{job_id}/sources`
+
+خروجی:
+
+```
+[
+ {
+   "id":1,
+   "title":"بهترین لوازم جانبی موبایل",
+   "url":"https://example.com",
+   "summary":"...",
+   "key_points":[]
+ }
+]
+```
+
+این اطلاعات در UI به صورت **Source Cards** نمایش داده می‌شود.
+
+---
+
+## 2.4 Add Manual Source
+
+کاربر می‌تواند منابع جدید اضافه کند.
+
+دو نوع:
+
+URL
+Manual Text
+
+Endpoint
+
+POST
+`/api/research/{job_id}/sources`
+
+مثال URL:
+
+```
+{
+ "source_type": "url",
+ "url": "https://example.com/article"
+}
+```
+
+مثال متن:
+
+```
+{
+ "source_type": "text",
+ "title": "manual research",
+ "raw_content": "..."
+}
+```
+
+---
+
+## 2.5 Delete Source
+
+حذف یک منبع از تحقیق.
+
+Endpoint
+
+DELETE
+`/api/research/source/{id}`
+
+---
+
+## 2.6 Toggle Source Selection
+
+کاربر می‌تواند مشخص کند یک منبع در تولید محتوا استفاده شود یا نه.
+
+Endpoint
+
+PATCH
+`/api/research/source/{id}`
+
+```
+{
+ "is_selected": false
+}
+```
+
+---
+
+## 2.7 Latest Research For Content
+
+برگرداندن آخرین تحقیق مربوط به یک Content Item.
+
+Endpoint
+
+GET
+`/api/content/{content_id}/research`
+
+خروجی:
+
+ResearchJob
++ Sources
+
+---
+
+## 2.8 n8n Callback Endpoint
+
+این endpoint توسط n8n فراخوانی می‌شود زمانی که تحقیق کامل شد.
+
+Endpoint
+
+POST
+`/api/research/callback`
+
+ورودی نمونه:
+
+```
+{
+ "external_job_id": "abc123",
+ "sources":[
+   {
+     "url":"...",
+     "title":"...",
+     "cleaned_content":"...",
+     "summary":"...",
+     "key_points":[]
+   }
+ ]
+}
+```
+
+وظایف:
+
+1. پیدا کردن ResearchJob
+2. ذخیره ResearchSource ها
+3. تغییر status به success
+4. ثبت finished_at
+5. ذخیره response_payload
+
+---
+
+# 3. Research Service Layer
+
+برای تمیز بودن معماری، منطق باید در service layer قرار بگیرد.
+
+پیشنهاد ساختار:
+
+research/services.py
+
+توابع پیشنهادی:
+
+start_research(content_item)
+
+create_research_job()
+
+send_to_n8n()
+
+process_research_callback()
+
+create_sources()
+
+scrape_manual_url()
+
+toggle_source()
+
+delete_source()
+
+---
+
+# 4. n8n Research Pipeline
+
+Workflow در n8n باید مراحل زیر را انجام دهد.
+
+Step 1
+Receive Webhook
+
+ورودی:
+
+keyword
+additional_keywords
+
+---
+
+Step 2
+Google Search
+
+پیدا کردن Top 5 Results
+
+---
+
+Step 3
+Page Scraping
+
+استخراج متن از صفحات
+
+Tools پیشنهادی:
+
+HTTP request
+HTML extractor
+
+---
+
+Step 4
+Content Cleaning
+
+حذف:
+
+navigation
+footer
+ads
+scripts
+
+---
+
+Step 5
+Chunking
+
+تقسیم متن به بخش‌های کوچکتر برای پردازش بهتر.
+
+---
+
+Step 6
+AI Summarization
+
+مدل پیشنهادی:
+
+GPT‑4o mini
+
+وظیفه:
+
+خلاصه سازی متن
+
+---
+
+Step 7
+Key Points Extraction
+
+استخراج نکات کلیدی مقاله.
+
+مثال خروجی:
+
+```
+[
+ "انواع لوازم جانبی موبایل",
+ "نکات خرید شارژر",
+ "بهترین برندها"
+]
+```
+
+---
+
+Step 8
+Send Results To Django
+
+ارسال داده‌ها به:
+
+`/api/research/callback`
+
+---
+
+# 5. Data Flow Summary
+
+User
+→ Start Research
+
+Django
+→ Create ResearchJob
+
+Django
+→ Send request to n8n
+
+n8n
+→ Search
+→ Scrape
+→ Clean
+→ Summarize
+→ Extract key points
+
+n8n
+→ Send results to Django
+
+Django
+→ Save ResearchSource
+
+User
+→ Review sources
+→ Select sources
+→ Generate Outline
+
+---
+
+# 6. Future Improvements (Post‑MVP)
+
+Auto clustering of keywords
+
+SERP analysis
+
+Competitor content analysis
+
+Content gap detection
+
+Auto keyword extraction
+
+Citation system in generated articles
+
+---
+
+# 7. Final Research Data Used By AI
+
+برای تولید Outline و Article از داده‌های زیر استفاده می‌شود:
+
+Main Keyword
+Additional Keywords
+Selected Sources
+Key Points
+Summaries
+Content Goal
+Tone
+Content Length
+Platform
+
+این داده‌ها به مرحله **Outline Generation** ارسال می‌شوند.
+:::
+
+اگر بخواهی در قدم بعدی می‌توانم یک سند مشابه هم برای **Outline Generation + Article Generation Architecture** بنویسم که بخش دوم موتور AI پلتفرم تو خواهد بود.
