@@ -1,0 +1,313 @@
+<!-- Overlay -->
+<div id="publishOverlay" class="pub-overlay" onclick="closePublishModal()"></div>
+
+<!-- Modal -->
+<div id="publishModal" class="pub-modal">
+
+    <div class="pub-header">
+        <div class="pub-header-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+            </svg>
+        </div>
+        <div>
+            <h3>انتشار در تلگرام</h3>
+            <p>کانال‌های مورد نظر را انتخاب کنید</p>
+        </div>
+        <button class="pub-close" onclick="closePublishModal()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div class="pub-body">
+        <div id="pubChannelsList"></div>
+    </div>
+
+    <div class="pub-footer">
+        <button class="pub-btn-cancel" onclick="closePublishModal()">انصراف</button>
+        <button class="pub-btn-send" id="pubSendBtn" onclick="publishToSelected()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+            </svg>
+            ارسال
+        </button>
+    </div>
+
+</div>
+
+<style>
+.pub-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.pub-overlay.active { opacity: 1; pointer-events: auto; }
+
+.pub-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -46%);
+    width: 90%;
+    max-width: 480px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    z-index: 901;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pub-modal.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+
+.pub-header {
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.pub-header-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: white;
+    box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+}
+.pub-header h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+.pub-header p  { font-size: 13px; color: var(--text-muted); }
+.pub-close {
+    margin-right: auto;
+    width: 36px; height: 36px;
+    border: 1px solid var(--border-color);
+    background: transparent; border-radius: 9px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: all 0.2s ease; flex-shrink: 0;
+}
+.pub-close:hover { background: rgba(239,68,68,0.1); border-color: #ef4444; color: #ef4444; }
+
+.pub-body { padding: 20px 24px; max-height: 320px; overflow-y: auto; }
+
+.pub-channel-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 11px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.2s ease; user-select: none;
+}
+.pub-channel-item:hover { border-color: var(--accent-color); background: rgba(14,165,233,0.06); }
+.pub-channel-item.selected { border-color: var(--accent-color); background: rgba(14,165,233,0.1); }
+
+.pub-checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease; flex-shrink: 0;
+}
+.pub-channel-item.selected .pub-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
+.pub-checkbox svg { opacity: 0; transition: opacity 0.2s ease; }
+.pub-channel-item.selected .pub-checkbox svg { opacity: 1; }
+
+.pub-channel-avatar {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.pub-channel-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.pub-channel-sub  { font-size: 12px; color: var(--text-muted); direction: ltr; text-align: left; }
+
+.pub-empty { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 14px; }
+.pub-empty a { color: var(--accent-color); text-decoration: none; }
+
+.pub-result-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; margin-bottom: 8px;
+}
+.pub-result-ok   { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
+.pub-result-fail { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #ef4444; }
+
+.pub-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    display: flex; justify-content: flex-end; gap: 10px;
+}
+.pub-btn-cancel {
+    padding: 10px 22px;
+    border: 1px solid var(--border-color);
+    background: transparent; color: var(--text-secondary);
+    border-radius: 10px; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.pub-btn-cancel:hover { background: rgba(255,255,255,0.05); }
+
+.pub-btn-send {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+}
+.pub-btn-send:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(14,165,233,0.5); }
+.pub-btn-send:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.pub-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white; border-radius: 50%;
+    animation: pubSpin 0.7s linear infinite; display: inline-block;
+}
+@keyframes pubSpin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+let _pubContentId = null;
+const CSRF_PUB = document.querySelector('meta[name="csrf-token"]')?.content
+    || (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || "";
+
+function openPublishModal(contentId) {
+    _pubContentId = contentId;
+    document.getElementById("publishOverlay").classList.add("active");
+    document.getElementById("publishModal").classList.add("active");
+    loadPubChannels();
+}
+
+function closePublishModal() {
+    document.getElementById("publishOverlay").classList.remove("active");
+    document.getElementById("publishModal").classList.remove("active");
+    _pubContentId = null;
+}
+
+async function loadPubChannels() {
+    const list = document.getElementById("pubChannelsList");
+    const btn  = document.getElementById("pubSendBtn");
+
+    list.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:10px">
+            ${[1,2].map(() => `
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--border-color);border-radius:11px">
+                <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(90deg,var(--bg-tertiary) 25%,rgba(14,165,233,0.08) 50%,var(--bg-tertiary) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+                    <div style="height:14px;width:50%;border-radius:5px;background:linear-gradient(90deg,var(--bg-tertiary) 25%,rgba(14,165,233,0.08) 50%,var(--bg-tertiary) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite"></div>
+                    <div style="height:11px;width:30%;border-radius:5px;background:linear-gradient(90deg,var(--bg-tertiary) 25%,rgba(14,165,233,0.08) 50%,var(--bg-tertiary) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite"></div>
+                </div>
+            </div>`).join("")}
+        </div>`;
+
+    try {
+        const res = await fetch("/messaging/api/v1/telegram/channels/");
+        const data = await res.json();
+        const channels = data.channels || [];
+
+        if (channels.length === 0) {
+            list.innerHTML = `
+                <div class="pub-empty">
+                    هنوز کانالی اضافه نکرده‌اید.<br>
+                    <a href="/telegram/channels/">ابتدا یک کانال اضافه کنید</a>
+                </div>`;
+            btn.disabled = true;
+            return;
+        }
+
+        btn.disabled = false;
+        list.innerHTML = channels.map(ch => {
+            const initial = ch.title ? ch.title.charAt(0) : "?";
+            const sub = ch.username ? `@${ch.username}` : ch.chat_id;
+            return `
+            <div class="pub-channel-item" id="pch-${ch.id}" onclick="togglePubChannel(${ch.id})">
+                <div class="pub-checkbox">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="pub-channel-avatar">${initial}</div>
+                <div>
+                    <div class="pub-channel-name">${ch.title}</div>
+                    <div class="pub-channel-sub">${sub}</div>
+                </div>
+            </div>`;
+        }).join("");
+
+    } catch (e) {
+        list.innerHTML = `<div class="pub-empty">خطا در بارگذاری کانال‌ها</div>`;
+        btn.disabled = true;
+    }
+}
+
+function togglePubChannel(channelId) {
+    const el = document.getElementById(`pch-${channelId}`);
+    if (el) el.classList.toggle("selected");
+}
+
+async function publishToSelected() {
+    const selected = document.querySelectorAll(".pub-channel-item.selected");
+    if (selected.length === 0) {
+        alert("حداقل یک کانال انتخاب کنید");
+        return;
+    }
+
+    const channelIds = Array.from(selected).map(el => parseInt(el.id.replace("pch-", "")));
+    const btn = document.getElementById("pubSendBtn");
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="pub-spinner"></span> در حال ارسال...`;
+
+    try {
+        const res = await fetch("/messaging/api/v1/telegram/publish/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRF_PUB
+            },
+            body: JSON.stringify({
+                content_id: _pubContentId,
+                channel_ids: channelIds
+            })
+        });
+
+        const data = await res.json();
+        renderPubResults(data.results || []);
+
+    } catch (e) {
+        document.getElementById("pubChannelsList").innerHTML = `
+            <div class="pub-result-item pub-result-fail">خطا در ارتباط با سرور</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+            </svg>
+            ارسال مجدد`;
+    }
+}
+
+function renderPubResults(results) {
+    const list = document.getElementById("pubChannelsList");
+    list.innerHTML = results.map(r => `
+        <div class="pub-result-item ${r.success ? 'pub-result-ok' : 'pub-result-fail'}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                ${r.success
+                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>'
+                    : '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>'
+                }
+            </svg>
+            ${r.title}: ${r.success ? 'ارسال شد' : (r.error || 'خطا')}
+        </div>`).join("");
+}
+</script>

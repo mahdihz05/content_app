@@ -126,10 +126,10 @@ class AIChat {
         };
 
         this.endpoints = {
-            sendMessage:    '/content/api/v1/ai/send-message/',
+            sendMessage:    '/content/api/v1/ai/chat/send/',
             generateImage:  '/content/api/v1/ai/generate-image/',
             sessionHistory: (id) => `/content/api/v1/ai/session/${id}/history/`,
-            newConversation:'/content/api/v1/ai/new-conversation/',
+            newConversation:'/content/api/v1/ai/chat/new/',
             campaigns:      '/campaign/api/v1/campaign_list',
             contentDetail:  (id) => `/content/api/v1/content/${id}/`,
         };

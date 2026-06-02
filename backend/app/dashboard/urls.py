@@ -48,6 +48,8 @@ from .views import (
     messaging_campaign_detail_page,
 
     ai_chat_page,
+
+    telegram_channels_page
 )
 
 urlpatterns = [
@@ -179,4 +181,8 @@ urlpatterns = [
         ai_chat_page,
         name='messaging-ai-chat-page'
     ),
+
+    path('telegram/channels/',
+         telegram_channels_page,
+         name='telegram-channels-page')
 ]

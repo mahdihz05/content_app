@@ -1,4 +1,3 @@
-from .campaign import Campaign
-from .account import MessagingAccount
-from .message_log import MessageLog
-from .recipient import CampaignRecipient
+from .telegram_channel import TelegramChannel
+from .telegram_publish_log import TelegramPublishLog
+from .channel_verification import ChannelVerification

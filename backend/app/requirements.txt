@@ -17,3 +17,4 @@ redis
 django-celery-beat
 
 openai
+python-telegram-bot==21.6

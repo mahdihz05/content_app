@@ -106,7 +106,6 @@ def messaging_campaign_list_page(request):
     """صفحه لیست کمپین‌های پیام‌رسانی (بخشی از bulk_send.html)"""
     return render(request, 'messaging/bulk_send.html')
 
-
 @login_required
 def messaging_campaign_create_page(request):
     """صفحه ایجاد کمپین پیام‌رسانی (بخشی از bulk_send.html)"""
@@ -125,3 +124,8 @@ def messaging_campaign_detail_page(request, pk):
 def ai_chat_page(request):
     """صفحه چت با AI (بخشی از auto_reply.html)"""
     return render(request, 'messaging/auto_reply.html')
+
+
+@login_required
+def telegram_channels_page(request):
+    return render(request, "messaging_automation/telegram_channels.html")

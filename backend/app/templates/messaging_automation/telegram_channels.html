@@ -1,0 +1,899 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}مدیریت کانال‌های تلگرام{% endblock %}
+{% block page_title %}مدیریت کانال‌های تلگرام{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== LAYOUT ===== */
+    .tg-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    /* ===== INTRO CARD ===== */
+    .intro-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 28px 32px;
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .intro-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 8px 20px rgba(14, 165, 233, 0.35);
+    }
+
+    .intro-icon svg {
+        width: 26px;
+        height: 26px;
+        color: white;
+    }
+
+    .intro-text h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .intro-text p {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.8;
+    }
+
+    .intro-text .bot-name {
+        display: inline-block;
+        background: rgba(14, 165, 233, 0.15);
+        border: 1px solid rgba(14, 165, 233, 0.35);
+        color: var(--accent-color);
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        direction: ltr;
+    }
+
+    /* ===== ADD CHANNEL CARD ===== */
+    .add-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 28px 32px;
+    }
+
+    .add-card h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .add-card h3::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 20px;
+        background: var(--accent-color);
+        border-radius: 2px;
+    }
+
+    /* ===== STEPS ===== */
+    .steps-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .step {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 18px 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: rgba(14, 165, 233, 0.03);
+        transition: all 0.3s ease;
+    }
+
+    .step.active {
+        border-color: var(--accent-color);
+        background: rgba(14, 165, 233, 0.07);
+    }
+
+    .step.done {
+        border-color: rgba(16, 185, 129, 0.4);
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .step-num {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(14, 165, 233, 0.15);
+        border: 1px solid rgba(14, 165, 233, 0.3);
+        color: var(--accent-color);
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .step.done .step-num {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #10b981;
+    }
+
+    .step-body {
+        flex: 1;
+    }
+
+    .step-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .step-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.7;
+    }
+
+    /* توکن نمایش */
+    .token-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 12px;
+        padding: 12px 16px;
+        background: rgba(14, 165, 233, 0.08);
+        border: 1px dashed rgba(14, 165, 233, 0.4);
+        border-radius: 10px;
+        direction: ltr;
+    }
+
+    .token-text {
+        font-family: monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--accent-color);
+        letter-spacing: 2px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .btn-copy {
+        padding: 6px 14px;
+        border: 1px solid rgba(14, 165, 233, 0.4);
+        background: transparent;
+        color: var(--accent-color);
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-copy:hover {
+        background: rgba(14, 165, 233, 0.15);
+    }
+
+    /* دکمه‌ها */
+    .btn-primary {
+        padding: 13px 28px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(14, 165, 233, 0.5);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        padding: 10px 20px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        color: var(--text-secondary);
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+
+    /* ===== ALERT ===== */
+    .alert {
+        padding: 13px 18px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #10b981;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #ef4444;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== CHANNELS LIST ===== */
+    .channels-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 28px 32px;
+    }
+
+    .channels-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 22px;
+    }
+
+    .channels-header h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .channels-header h3::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 20px;
+        background: var(--accent-color);
+        border-radius: 2px;
+    }
+
+    .channels-count {
+        background: rgba(14, 165, 233, 0.15);
+        color: var(--accent-color);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: var(--text-muted);
+    }
+
+    .empty-state svg {
+        width: 52px;
+        height: 52px;
+        margin-bottom: 16px;
+        opacity: 0.4;
+    }
+
+    .empty-state p {
+        font-size: 15px;
+    }
+
+    .channel-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .channel-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        background: rgba(14, 165, 233, 0.04);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .channel-item:hover {
+        border-color: var(--accent-color);
+        background: rgba(14, 165, 233, 0.08);
+        transform: translateX(-3px);
+    }
+
+    .channel-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .channel-info { flex: 1; min-width: 0; }
+
+    .channel-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .channel-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .channel-id {
+        font-size: 12px;
+        color: var(--text-muted);
+        direction: ltr;
+    }
+
+    .channel-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .badge-channel  { background: rgba(14,165,233,0.15); color: var(--accent-color); border: 1px solid rgba(14,165,233,0.3); }
+    .badge-group    { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-supergroup { background: rgba(139,92,246,0.15); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.3); }
+
+    .channel-verified {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #10b981;
+    }
+
+    .channel-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-delete {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        background: rgba(239, 68, 68, 0.08);
+        color: #ef4444;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.18);
+        border-color: #ef4444;
+        transform: scale(1.05);
+    }
+
+    /* ===== SKELETON ===== */
+    .skeleton {
+        background: linear-gradient(
+            90deg,
+            var(--bg-tertiary) 25%,
+            rgba(14, 165, 233, 0.08) 50%,
+            var(--bg-tertiary) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .skeleton-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    /* ===== SPINNER ===== */
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tg-wrapper">
+
+    <!-- معرفی -->
+    <div class="intro-card">
+        <div class="intro-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+            </svg>
+        </div>
+        <div class="intro-text">
+            <h3>اتصال کانال یا گروه تلگرام</h3>
+            <p>
+                برای اتصال کانال یا گروه، ربات
+                <span class="bot-name">@{{ bot_username }}</span>
+                را ادمین کانال کنید، سپس روی «دریافت کد» کلیک کنید،
+                کد را داخل کانال ارسال کنید و «تأیید کانال» را بزنید.
+                بدون نیاز به وارد کردن آیدی یا تنظیمات اضافه.
+            </p>
+        </div>
+    </div>
+
+    <!-- افزودن کانال — فلوی جدید -->
+    <div class="add-card">
+        <h3>افزودن کانال جدید</h3>
+
+        <div class="steps-wrapper">
+
+            <!-- مرحله ۱: دریافت کد -->
+            <div class="step active" id="step1">
+                <div class="step-num" id="step1Num">۱</div>
+                <div class="step-body">
+                    <div class="step-title">دریافت کد تأیید</div>
+                    <div class="step-desc">
+                        روی دکمه زیر کلیک کنید تا یک کد اختصاصی برای شما صادر شود.
+                    </div>
+                    <button class="btn-primary" id="getTokenBtn" onclick="requestToken()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        دریافت کد تأیید
+                    </button>
+                    <div id="step1Result"></div>
+                </div>
+            </div>
+
+            <!-- مرحله ۲: ارسال کد در کانال -->
+            <div class="step" id="step2">
+                <div class="step-num">۲</div>
+                <div class="step-body">
+                    <div class="step-title">ارسال کد در کانال</div>
+                    <div class="step-desc">
+                        کد زیر را دقیقاً داخل کانال یا گروه خود ارسال کنید.
+                        قبل از ارسال مطمئن شوید ربات
+                        <span style="color: var(--accent-color); font-weight: 600;">@{{ bot_username }}</span>
+                        را ادمین کرده‌اید.
+                    </div>
+                    <div class="token-box" id="tokenBox" style="display:none">
+                        <span class="token-text" id="tokenDisplay"></span>
+                        <button class="btn-copy" onclick="copyToken()">کپی</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مرحله ۳: تأیید -->
+            <div class="step" id="step3">
+                <div class="step-num">۳</div>
+                <div class="step-body">
+                    <div class="step-title">تأیید و اتصال کانال</div>
+                    <div class="step-desc">
+                        بعد از ارسال کد در کانال، روی دکمه زیر کلیک کنید.
+                    </div>
+                    <button class="btn-primary" id="confirmBtn" onclick="confirmChannel()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        تأیید کانال
+                    </button>
+                    <button class="btn-secondary" id="resetBtn" onclick="resetFlow()" style="display:none; margin-right: 8px;">
+                        شروع مجدد
+                    </button>
+                    <div id="step3Result"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- لیست کانال‌ها -->
+    <div class="channels-card">
+        <div class="channels-header">
+            <h3>کانال‌های متصل</h3>
+            <span class="channels-count" id="channelsCount">در حال بارگذاری...</span>
+        </div>
+        <div id="channelsList">
+            <div class="skeleton-item">
+                <div class="skeleton" style="width:44px;height:44px;border-radius:12px;flex-shrink:0"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                    <div class="skeleton" style="height:16px;width:55%"></div>
+                    <div class="skeleton" style="height:12px;width:35%"></div>
+                </div>
+            </div>
+            <div class="skeleton-item">
+                <div class="skeleton" style="width:44px;height:44px;border-radius:12px;flex-shrink:0"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                    <div class="skeleton" style="height:16px;width:45%"></div>
+                    <div class="skeleton" style="height:12px;width:30%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = "{{ csrf_token }}";
+let _currentToken = null;
+
+// ===== مرحله ۱: دریافت توکن =====
+async function requestToken() {
+    const btn = document.getElementById("getTokenBtn");
+    const result = document.getElementById("step1Result");
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> در حال صدور کد...`;
+    result.innerHTML = "";
+
+    try {
+        const res = await fetch("/messaging/api/v1/telegram/request-channel-verification/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRF
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.token) {
+            _currentToken = data.token;
+
+            // نمایش توکن در مرحله ۲
+            document.getElementById("tokenDisplay").textContent = data.token;
+            document.getElementById("tokenBox").style.display = "flex";
+
+            // فعال‌سازی مراحل
+            document.getElementById("step1").classList.remove("active");
+            document.getElementById("step1").classList.add("done");
+            document.getElementById("step1Num").innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>`;
+
+            document.getElementById("step2").classList.add("active");
+            document.getElementById("step3").classList.add("active");
+            document.getElementById("confirmBtn").disabled = false;
+            document.getElementById("resetBtn").style.display = "inline-flex";
+
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                کد صادر شد`;
+
+        } else {
+            showResult(result, false, "خطا در صدور کد. دوباره تلاش کنید.");
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                دریافت کد تأیید`;
+        }
+
+    } catch (e) {
+        showResult(result, false, "خطا در ارتباط با سرور");
+        btn.disabled = false;
+        btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            دریافت کد تأیید`;
+    }
+}
+
+// ===== کپی توکن =====
+function copyToken() {
+    if (!_currentToken) return;
+    navigator.clipboard.writeText(_currentToken).then(() => {
+        const btn = document.querySelector(".btn-copy");
+        btn.textContent = "کپی شد ✓";
+        setTimeout(() => { btn.textContent = "کپی"; }, 2000);
+    });
+}
+
+// ===== مرحله ۳: تأیید کانال =====
+async function confirmChannel() {
+    if (!_currentToken) return;
+
+    const btn = document.getElementById("confirmBtn");
+    const result = document.getElementById("step3Result");
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> در حال جستجو...`;
+    result.innerHTML = "";
+
+    try {
+        const res = await fetch("/messaging/api/v1/telegram/confirm-channel/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRF
+            },
+            body: JSON.stringify({ token: _currentToken })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showResult(result, true, `کانال «${data.channel.title}» با موفقیت متصل شد`);
+
+            // ریست فلو و رفرش لیست
+            setTimeout(() => {
+                resetFlow();
+                loadChannels();
+            }, 1800);
+
+        } else {
+            showResult(result, false, data.error || "کانال تأیید نشد");
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                تأیید کانال`;
+        }
+
+    } catch (e) {
+        showResult(result, false, "خطا در ارتباط با سرور");
+        btn.disabled = false;
+        btn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            تأیید کانال`;
+    }
+}
+
+// ===== ریست فلو =====
+function resetFlow() {
+    _currentToken = null;
+
+    document.getElementById("step1").classList.add("active");
+    document.getElementById("step1").classList.remove("done");
+    document.getElementById("step1Num").textContent = "۱";
+    document.getElementById("step2").classList.remove("active");
+    document.getElementById("step3").classList.remove("active");
+
+    document.getElementById("tokenBox").style.display = "none";
+    document.getElementById("tokenDisplay").textContent = "";
+    document.getElementById("step1Result").innerHTML = "";
+    document.getElementById("step3Result").innerHTML = "";
+
+    const getBtn = document.getElementById("getTokenBtn");
+    getBtn.disabled = false;
+    getBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        دریافت کد تأیید`;
+
+    document.getElementById("confirmBtn").disabled = true;
+    document.getElementById("resetBtn").style.display = "none";
+}
+
+// ===== بارگذاری لیست کانال‌ها =====
+async function loadChannels() {
+    try {
+        const res = await fetch("/messaging/api/v1/telegram/channels/", {
+            headers: { "X-CSRFToken": CSRF }
+        });
+        const data = await res.json();
+        renderChannels(data.channels || []);
+    } catch (e) {
+        document.getElementById("channelsList").innerHTML = `
+            <div class="alert alert-error">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                خطا در بارگذاری کانال‌ها
+            </div>`;
+        document.getElementById("channelsCount").textContent = "خطا";
+    }
+}
+
+function renderChannels(channels) {
+    document.getElementById("channelsCount").textContent = channels.length + " کانال";
+    const list = document.getElementById("channelsList");
+
+    if (channels.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M22 2L11 13"></path>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                </svg>
+                <p>هنوز کانالی اضافه نکرده‌اید</p>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = `<div class="channel-list">${channels.map(ch => channelCard(ch)).join("")}</div>`;
+}
+
+function channelCard(ch) {
+    const initial = ch.title ? ch.title.charAt(0) : "?";
+    const badgeClass = ch.channel_type === "channel" ? "badge-channel"
+                     : ch.channel_type === "supergroup" ? "badge-supergroup"
+                     : "badge-group";
+    const badgeLabel = ch.channel_type === "channel" ? "کانال"
+                     : ch.channel_type === "supergroup" ? "سوپرگروه"
+                     : "گروه";
+    const username = ch.username ? `@${ch.username}` : ch.chat_id;
+
+    return `
+    <div class="channel-item" id="ch-${ch.id}">
+        <div class="channel-avatar">${initial}</div>
+        <div class="channel-info">
+            <div class="channel-title">${ch.title}</div>
+            <div class="channel-meta">
+                <span class="channel-id">${username}</span>
+                <span class="channel-badge ${badgeClass}">${badgeLabel}</span>
+                <span class="channel-verified">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    تأیید شده
+                </span>
+            </div>
+        </div>
+        <div class="channel-actions">
+            <button class="btn-delete" title="حذف" onclick="deleteChannel(${ch.id})">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6l-1 14H6L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                    <path d="M9 6V4h6v2"></path>
+                </svg>
+            </button>
+        </div>
+    </div>`;
+}
+
+// ===== حذف کانال =====
+async function deleteChannel(channelId) {
+    if (!confirm("آیا مطمئن هستید که می‌خواهید این کانال را حذف کنید؟")) return;
+
+    const item = document.getElementById(`ch-${channelId}`);
+    if (item) { item.style.opacity = "0.4"; item.style.pointerEvents = "none"; }
+
+    try {
+        const res = await fetch(`/messaging/api/v1/telegram/channels/${channelId}/`, {
+            method: "DELETE",
+            headers: { "X-CSRFToken": CSRF }
+        });
+
+        if (res.ok) {
+            loadChannels();
+        } else {
+            if (item) { item.style.opacity = "1"; item.style.pointerEvents = "auto"; }
+            alert("خطا در حذف کانال");
+        }
+    } catch (e) {
+        if (item) { item.style.opacity = "1"; item.style.pointerEvents = "auto"; }
+        alert("خطا در ارتباط با سرور");
+    }
+}
+
+// ===== نمایش نتیجه =====
+function showResult(el, success, message) {
+    const icon = success
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+    el.innerHTML = `<div class="alert ${success ? 'alert-success' : 'alert-error'}">${icon} ${message}</div>`;
+}
+
+// بارگذاری اولیه
+loadChannels();
+</script>
+{% endblock %}

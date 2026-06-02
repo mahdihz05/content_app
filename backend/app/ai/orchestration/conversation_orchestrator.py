@@ -25,6 +25,7 @@ class ConversationOrchestrator:
         "platform_selection": "انتخاب پلتفرم",
         "goal_selection": "انتخاب هدف",
         "content_details": "جزئیات محتوا",
+        "auto_publish_confirmation": "تایید انتشار خودکار",
         "research": "تحقیق",
         "final_confirmation": "تایید نهایی",
         "content_generation": "تولید محتوا",
@@ -126,50 +127,31 @@ class ConversationOrchestrator:
     # MAIN
     # =========================================================
 
-    def process_message(
-        self,
-        user_message: str,
-    ) -> Dict[str, Any]:
+    def process_message(self, user_message: str) -> Dict[str, Any]:
 
         try:
 
             self.session = (
-                self.session
-                or self._create_session()
+                    self.session or self._create_session()
             )
 
             if self.session and not self.content_item:
                 self.content_item = self.session.content_item
 
-            normalized_message = (
-                user_message
-                .strip()
-                .lower()
-            )
+            normalized_message = user_message.strip().lower()
 
-            self._save_message(
-                user_message,
-                "user",
-            )
+            self._save_message(user_message, "user")
 
             # =====================================================
             # GREETING
             # =====================================================
 
             if (
-                self._quick_intent_check(user_message)
-                == "greeting"
-                and not self.content_item
+                    self._quick_intent_check(user_message) == "greeting"
+                    and not self.content_item
             ):
-
                 response = self._handle_greeting()
-
-                self._save_message(
-                    response["message"],
-                    "assistant",
-                )
-                print(type(response))
-                print(response)
+                self._save_message(response["message"], "assistant")
                 return self._build_final_response(response)
 
             # =====================================================
@@ -177,9 +159,7 @@ class ConversationOrchestrator:
             # =====================================================
 
             if not self.content_item:
-                self._create_content_item({
-                    "title": "محتوای جدید"
-                })
+                self._create_content_item({"title": "محتوای جدید"})
 
             # =====================================================
             # DETECT STAGE
@@ -188,20 +168,77 @@ class ConversationOrchestrator:
             stage = self._detect_current_stage()
 
             # =====================================================
+            # AUTO PUBLISH CONFIRMATION STAGE
+            # =====================================================
+
+            if stage == "auto_publish_confirmation":
+
+                if any(word in normalized_message for word in self.CONFIRM_WORDS):
+
+                    self._enable_auto_publish()
+
+                    metadata = self.content_item.metadata or {}
+                    metadata["auto_publish_decided"] = True
+                    self.content_item.metadata = metadata
+                    self.content_item.save()
+
+                    response = {
+                        "message": (
+                            "✅ بعد از تولید، خودکار در کانال تلگرام منتشر می‌شود.\n\n"
+                            "آیا تحقیق روی موضوع انجام شود؟"
+                        ),
+                        "quick_replies": [
+                            {"label": "بله", "value": "بله"},
+                            {"label": "نه", "value": "نه"},
+                        ],
+                        "orders": [],
+                    }
+
+                elif any(word in normalized_message for word in self.SKIP_WORDS):
+
+                    self._disable_auto_publish()
+
+                    metadata = self.content_item.metadata or {}
+                    metadata["auto_publish_decided"] = True
+                    self.content_item.metadata = metadata
+                    self.content_item.save()
+
+                    response = {
+                        "message": (
+                            "باشه، انتشار دستی خواهد بود.\n\n"
+                            "آیا تحقیق روی موضوع انجام شود؟"
+                        ),
+                        "quick_replies": [
+                            {"label": "بله", "value": "بله"},
+                            {"label": "نه", "value": "نه"},
+                        ],
+                        "orders": [],
+                    }
+
+                else:
+
+                    response = {
+                        "message": (
+                            "بعد از تولید محتوا، آیا خودکار "
+                            "در کانال تلگرام منتشر شود؟"
+                        ),
+                        "quick_replies": [
+                            {"label": "بله، منتشر کن", "value": "بله"},
+                            {"label": "نه", "value": "نه"},
+                        ],
+                        "orders": [],
+                    }
+
+                self._save_message(response["message"], "assistant")
+                return self._build_final_response(response)
+
+            # =====================================================
             # RESEARCH STAGE
             # =====================================================
 
             if stage == "research":
-
-                response = self._handle_research_stage_message(
-                    user_message
-                )
-
-                self._save_message(
-                    response["message"],
-                    "assistant",
-                )
-
+                response = self._handle_research_stage_message(user_message)
+                self._save_message(response["message"], "assistant")
                 return self._build_final_response(response)
 
             # =====================================================
@@ -209,13 +246,9 @@ class ConversationOrchestrator:
             # =====================================================
 
             if (
-                stage == "final_confirmation"
-                and any(
-                    word in normalized_message
-                    for word in self.GENERATE_WORDS
-                )
+                    stage == "final_confirmation"
+                    and any(word in normalized_message for word in self.GENERATE_WORDS)
             ):
-
                 article = self._generate_content()
 
                 response = {
@@ -224,11 +257,7 @@ class ConversationOrchestrator:
                     "orders": [],
                 }
 
-                self._save_message(
-                    article,
-                    "assistant",
-                )
-
+                self._save_message(article, "assistant")
                 return self._build_final_response(response)
 
             # =====================================================
@@ -236,11 +265,8 @@ class ConversationOrchestrator:
             # =====================================================
 
             if stage == "completed":
-
                 response = {
-                    "message": (
-                        "این محتوا قبلاً تولید شده است."
-                    ),
+                    "message": "این محتوا قبلاً تولید شده است.",
                     "quick_replies": [],
                     "orders": [],
                 }
@@ -256,18 +282,13 @@ class ConversationOrchestrator:
             messages = [
                 {
                     "role": "system",
-                    "content": InterviewPrompts.get_system_prompt(
-                        backend_context
-                    ),
+                    "content": InterviewPrompts.get_system_prompt(backend_context),
                 },
-
                 *self._get_conversation_history(),
-
                 {
                     "role": "user",
                     "content": InterviewPrompts.get_user_prompt(
-                        user_message,
-                        backend_context,
+                        user_message, backend_context
                     ),
                 },
             ]
@@ -285,9 +306,7 @@ class ConversationOrchestrator:
 
             parsed = self._parse_ai_response(ai_response)
 
-            self._execute_orders(
-                parsed.get("orders", [])
-            )
+            self._execute_orders(parsed.get("orders", []))
 
             if self.content_item:
                 self.content_item.refresh_from_db()
@@ -299,29 +318,36 @@ class ConversationOrchestrator:
             # =====================================================
 
             if stage_after_orders == "research":
-
                 response = {
-                    "message": (
-                        "آیا تحقیق روی موضوع انجام شود؟"
-                    ),
+                    "message": "آیا تحقیق روی موضوع انجام شود؟",
                     "quick_replies": [
-                        {
-                            "label": "بله",
-                            "value": "بله",
-                        },
-                        {
-                            "label": "نه",
-                            "value": "نه",
-                        },
+                        {"label": "بله", "value": "بله"},
+                        {"label": "نه", "value": "نه"},
                     ],
                     "orders": [],
                 }
 
-                self._save_message(
-                    response["message"],
-                    "assistant",
-                )
+                self._save_message(response["message"], "assistant")
+                return self._build_final_response(response)
 
+            # =====================================================
+            # AUTO ASK AUTO PUBLISH
+            # =====================================================
+
+            if stage_after_orders == "auto_publish_confirmation":
+                response = {
+                    "message": (
+                        "بعد از تولید محتوا، آیا خودکار "
+                        "در کانال تلگرام منتشر شود؟"
+                    ),
+                    "quick_replies": [
+                        {"label": "بله، منتشر کن", "value": "بله"},
+                        {"label": "نه", "value": "نه"},
+                    ],
+                    "orders": [],
+                }
+
+                self._save_message(response["message"], "assistant")
                 return self._build_final_response(response)
 
             # =====================================================
@@ -329,7 +355,6 @@ class ConversationOrchestrator:
             # =====================================================
 
             if stage_after_orders == "final_confirmation":
-
                 response = {
                     "message": (
                         "خلاصه اطلاعات فعلی:\n\n"
@@ -340,36 +365,24 @@ class ConversationOrchestrator:
                         "«بساز»"
                     ),
                     "quick_replies": [
-                        {
-                            "label": "بساز",
-                            "value": "بساز",
-                        }
+                        {"label": "بساز", "value": "بساز"}
                     ],
                     "orders": [],
                 }
 
-                self._save_message(
-                    response["message"],
-                    "assistant",
-                )
-
+                self._save_message(response["message"], "assistant")
                 return self._build_final_response(response)
 
             # =====================================================
             # NORMAL RESPONSE
             # =====================================================
 
-            self._save_message(
-                parsed["message"],
-                "assistant",
-            )
-
+            self._save_message(parsed["message"], "assistant")
             return self._build_final_response(parsed)
 
         except Exception as e:
 
             print(f"❌ process_message error: {e}")
-
             return self._build_error_response()
 
     # =========================================================
@@ -429,48 +442,22 @@ class ConversationOrchestrator:
             self.content_item.title or ""
         ).strip()
 
-        # =========================================
-        # PLATFORM
-        # =========================================
-
         if not platform:
             return "platform_selection"
-
-        # =========================================
-        # GOAL
-        # =========================================
 
         if not goal:
             return "goal_selection"
 
-        # =========================================
-        # TITLE
-        # =========================================
-
-        if title in [
-            "",
-            "محتوای جدید",
-            "untitled",
-        ]:
+        if title in ["", "محتوای جدید", "untitled"]:
             return "content_details"
 
-        # =========================================
-        # REQUIRED CONTENT DETAILS
-        # =========================================
-
         required_fields = {
-
-            "target_audience":
-                metadata.get("target_audience"),
-
-            "tone":
-                metadata.get("tone"),
+            "target_audience": metadata.get("target_audience"),
+            "tone": metadata.get("tone"),
         }
 
         missing = [
-
             k for k, v in required_fields.items()
-
             if not str(v or "").strip()
         ]
 
@@ -478,22 +465,24 @@ class ConversationOrchestrator:
             return "content_details"
 
         # =========================================
+        # AUTO PUBLISH CONFIRMATION
+        # =========================================
+
+        platform_is_telegram = platform.lower() == "telegram"
+        auto_publish_decided = metadata.get("auto_publish_decided", False)
+
+        if platform_is_telegram and not auto_publish_decided:
+            return "auto_publish_confirmation"
+
+        # =========================================
         # RESEARCH
         # =========================================
 
         research = info.get("research", [])
-
-        skipped = metadata.get(
-            "research_skipped",
-            False,
-        )
+        skipped = metadata.get("research_skipped", False)
 
         if not research and not skipped:
             return "research"
-
-        # =========================================
-        # GENERATING
-        # =========================================
 
         if status == "generating":
             return "content_generation"
@@ -547,12 +536,18 @@ class ConversationOrchestrator:
             "UPDATE_CONTENT_ITEM",
             "CREATE_CONTENT_ITEM",
             "UPDATE_CONTENT_DETAILS",
+
             "UPDATE_PLATFORM",
             "UPDATE_GOAL",
+
             "START_RESEARCH",
             "GENERATE_RESEARCH",
             "SKIP_RESEARCH",
+
             "GENERATE_CONTENT",
+
+            "ENABLE_AUTO_PUBLISH",
+            "DISABLE_AUTO_PUBLISH",
         }
 
         try:
@@ -660,6 +655,33 @@ class ConversationOrchestrator:
                 "quick_replies": [],
             }
 
+    def _enable_auto_publish(self):
+
+        if not self.content_item:
+            return
+
+        self.content_item.auto_publish = True
+        self.content_item.publish_immediately = True
+
+        self.content_item.save(
+            update_fields=[
+                "auto_publish",
+                "publish_immediately"
+            ]
+        )
+
+    def _disable_auto_publish(self):
+
+        if not self.content_item:
+            return
+
+        self.content_item.auto_publish = False
+
+        self.content_item.save(
+            update_fields=[
+                "auto_publish"
+            ]
+        )
     # =========================================================
     # ORDERS
     # =========================================================
@@ -668,6 +690,8 @@ class ConversationOrchestrator:
             self,
             orders: List[Dict[str, Any]],
     ):
+
+
 
         handlers = {
 
@@ -697,6 +721,12 @@ class ConversationOrchestrator:
 
             "GENERATE_CONTENT":
                 lambda _: self._generate_content(),
+
+            "ENABLE_AUTO_PUBLISH":
+                lambda _: self._enable_auto_publish(),
+
+            "DISABLE_AUTO_PUBLISH":
+                lambda _: self._disable_auto_publish(),
         }
 
         for order in orders:
@@ -1060,11 +1090,9 @@ class ConversationOrchestrator:
     def start_research(self):
 
         if not self.content_item:
-
             return {
                 "success": False,
-                "message":
-                    "content item not found",
+                "message": "content item not found",
             }
 
         try:
@@ -1072,82 +1100,138 @@ class ConversationOrchestrator:
             query = self._build_research_query()
 
             if not query.strip():
-
                 return {
                     "success": False,
-                    "message":
-                        "empty query",
+                    "message": "empty query",
                 }
 
-            sources = self._search_sources(query)
+            # ✅ اول چک کن منبعی برای این content_item هست
+            existing = ResearchSource.objects.filter(
+                content_item=self.content_item
+            )
+
+            if existing.exists():
+                sources = list(existing)
+            else:
+                sources = self._fetch_and_save_sources(query)
 
             research_data = []
 
             for src in sources:
-
                 research_data.append({
                     "id": src.id,
-                    "title":
-                        (src.title or "").strip(),
-
-                    "summary":
-                        (src.summary or "").strip(),
-
-                    "raw_text":
-                        (src.raw_text or "")[:4000],
-
-                    "url":
-                        getattr(src, "url", ""),
-
-                    "source_type":
-                        getattr(
-                            src,
-                            "source_type",
-                            "",
-                        ),
+                    "title": (src.title or "").strip(),
+                    "summary": (src.summary or "").strip(),
+                    "raw_text": (src.raw_text or "")[:4000],
+                    "url": getattr(src, "url", "") or "",
+                    "source_type": getattr(src, "source_type", ""),
                 })
 
-            information = (
-                self.content_item.information
-                or {}
+            information = self.content_item.information or {}
+            information["research"] = research_data
+            information["research_query"] = query
+            information["research_generated_at"] = (
+                timezone.now().isoformat()
             )
 
-            information["research"] = (
-                research_data
-            )
-
-            information["research_query"] = (
-                query
-            )
-
-            information[
-                "research_generated_at"
-            ] = timezone.now().isoformat()
-
-            self.content_item.information = (
-                information
-            )
-
-            self.content_item.status = (
-                "research_done"
-            )
-
+            self.content_item.information = information
+            self.content_item.status = "research_done"
             self.content_item.save()
 
             return {
                 "success": True,
-                "sources_count":
-                    len(research_data),
+                "sources_count": len(research_data),
             }
 
         except Exception as e:
 
             print(f"❌ research error: {e}")
-
             return {
                 "success": False,
                 "message": str(e),
             }
+
+    def _fetch_and_save_sources(self, query: str) -> list:
+
+        try:
+            from research.services.web_search_service import WebSearchService
+
+            service = WebSearchService()
+            results = service.search(query, max_results=10)
+
+            saved = []
+
+            for item in results:
+
+                if not item.get("title"):
+                    continue
+
+                src = ResearchSource.objects.create(
+                    content_item=self.content_item,
+                    title=item.get("title", "")[:500],
+                    url=item.get("url") or "",
+                    summary=item.get("summary", ""),
+                    raw_text=item.get("raw_text", ""),
+                    source_type="url",
+                )
+
+                saved.append(src)
+
+            return saved
+
+        except Exception as e:
+            print(f"❌ fetch sources error: {e}")
+            return []
+
+    def _search_sources_from_db(self, query: str) -> list:
+        """
+        fallback: جستجو در ResearchSource های موجود همه کاربر
+        (نه فقط این content_item)
+        """
+        keywords = [
+            k.strip().lower()
+            for k in re.split(r"[\s\|\-_,]+", query)
+            if len(k.strip()) >= 2
+        ]
+
+        if not keywords:
+            return []
+
+        db_query = Q()
+        for keyword in keywords:
+            db_query |= (
+                    Q(title__icontains=keyword)
+                    | Q(summary__icontains=keyword)
+                    | Q(raw_text__icontains=keyword)
+            )
+
+        # ✅ از همه منابع جستجو کن، نه فقط این content_item
+        queryset = (
+            ResearchSource.objects
+            .filter(db_query)
+            .distinct()[:50]
+        )
+
+        keyword_counter = Counter(keywords)
+        scored = []
+
+        for source in queryset:
+            score = 0
+            haystack = " ".join([
+                source.title or "",
+                source.summary or "",
+                source.raw_text or "",
+            ]).lower()
+
+            for kw, weight in keyword_counter.items():
+                if kw in haystack:
+                    score += weight
+
+            if score > 0:
+                scored.append((score, source))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [s[1] for s in scored[:20]]
 
     def _skip_research(self):
 
@@ -1399,11 +1483,35 @@ class ConversationOrchestrator:
                     info
                 )
 
-            self.content_item.status = (
-                "completed"
-            )
+            self.content_item.status = "completed"
 
             self.content_item.save()
+
+            # =====================================
+            # AUTO PUBLISH REQUEST
+            # =====================================
+
+            if self.content_item.auto_publish:
+
+                publish_result = self._auto_publish_to_telegram()
+
+                if publish_result["success"]:
+                    return (
+                            article
+                            + "\n\n"
+                            + "━━━━━━━━━━━━━━\n"
+                            + "✅ محتوا در تلگرام منتشر شد.\n"
+                            + f"کانال: {publish_result.get('channel_title', '')}"
+                    )
+                else:
+                    return (
+                            article
+                            + "\n\n"
+                            + "━━━━━━━━━━━━━━\n"
+                            + "⚠️ انتشار خودکار ناموفق بود.\n"
+                            + f"خطا: {publish_result.get('error', '')}\n"
+                            + "می‌توانید از پنل محتوا دوباره تلاش کنید."
+                    )
 
             return article
 
@@ -1732,6 +1840,56 @@ class ConversationOrchestrator:
             ),
         }
 
+    def _auto_publish_to_telegram(self) -> dict:
+        """
+        بعد از تولید محتوا، اگر auto_publish=True باشه،
+        اولین کانال فعال مرتبط با کمپین رو پیدا می‌کنه و publish می‌کنه.
+        """
+        if not self.content_item:
+            return {"success": False, "error": "content item not found"}
+
+        if not self.campaign:
+            return {
+                "success": False,
+                "error": "کمپینی به این محتوا متصل نیست"
+            }
+
+        try:
+            from messaging_automation.models.telegram_channel import TelegramChannel
+            from messaging_automation.services.telegram_publisher import TelegramPublisher
+
+            # اولین کانال فعال و تأیید شده مرتبط با کمپین
+            channel = (
+                TelegramChannel.objects
+                .filter(
+                    user=self.user,
+                    is_active=True,
+                    is_verified=True,
+                )
+                .first()
+            )
+
+            if not channel:
+                return {
+                    "success": False,
+                    "error": "کانال تلگرام فعالی برای این کمپین وجود ندارد"
+                }
+
+            publisher = TelegramPublisher()
+            publisher.publish(self.content_item, channel)
+
+            return {
+                "success": True,
+                "channel_title": channel.title,
+                "channel_id": channel.id,
+            }
+
+        except Exception as e:
+            print(f"❌ auto publish error: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
     def _build_error_response(self):
 
         return {

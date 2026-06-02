@@ -1,7 +1,7 @@
 services:
 
   # =====================================================
-  # PostgreSQL (STABLE)
+  # PostgreSQL
   # =====================================================
 
   db:
@@ -23,7 +23,7 @@ services:
       - "5432:5432"
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -47,6 +47,8 @@ services:
 
     shm_size: "2gb"
 
+    working_dir: /app
+
     env_file:
       - .env
 
@@ -59,15 +61,29 @@ services:
 
       CHROME_BIN: /usr/bin/chromium
       CHROMEDRIVER_PATH: /usr/bin/chromedriver
+
       SELENIUM_HEADLESS: "true"
+
       PYTHONUNBUFFERED: "1"
+
+    volumes:
+      - ./backend/app:/app
 
     command: >
       sh -c "
-        echo 'waiting for postgres...';
-        while ! nc -z db 5432; do sleep 1; done;
-        echo 'postgres started';
+        echo 'Waiting for postgres...';
+
+        while ! nc -z db 5432;
+        do
+          sleep 1;
+        done;
+
+        echo 'Postgres started';
+
         python manage.py migrate --noinput;
+
+        python manage.py collectstatic --noinput || true;
+
         python manage.py runserver 0.0.0.0:8000
       "
 
@@ -83,7 +99,7 @@ services:
 
 
   # =====================================================
-  # n8n (FIXED + SAFE)
+  # n8n
   # =====================================================
 
   n8n:
@@ -94,14 +110,16 @@ services:
     restart: always
 
     environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+
       N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-adminpass}
 
-      # جلوگیری از permission crash
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
 
-      # مسیر پایدار
       N8N_USER_FOLDER: /home/node/.n8n
+
+      TZ: Asia/Tehran
 
     volumes:
       - n8n_data:/home/node/.n8n
@@ -154,7 +172,7 @@ networks:
 
 
 # =====================================================
-# VOLUMES (IMPORTANT FIX)
+# VOLUMES
 # =====================================================
 
 volumes:

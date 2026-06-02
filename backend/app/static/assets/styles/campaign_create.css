@@ -61,10 +61,14 @@
     margin: 0 10px;
 }
 
+.form-group {
+    margin: 20px !important;
+}
+
+
 .form-group label {
     color: var(--text-secondary);
 }
-
 .form-group input,
 .form-group textarea {
     padding: 10px;
