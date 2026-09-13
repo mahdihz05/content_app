@@ -13,7 +13,7 @@ services:
 
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-strongpassword}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-project_db}
 
     volumes:
@@ -55,9 +55,9 @@ services:
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_NAME: ${POSTGRES_DB:-project_db}
-      DATABASE_USER: ${POSTGRES_USER:-postgres}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-strongpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-project_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
 
       CHROME_BIN: /usr/bin/chromium
       CHROMEDRIVER_PATH: /usr/bin/chromedriver
@@ -112,8 +112,8 @@ services:
     environment:
       N8N_BASIC_AUTH_ACTIVE: "true"
 
-      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
-      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-adminpass}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:?N8N_BASIC_AUTH_USER is required}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:?N8N_BASIC_AUTH_PASSWORD is required}
 
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
 

@@ -1,9 +1,15 @@
  
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+staticfiles/
 env/
 venv/
 selenium_service/

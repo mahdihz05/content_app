@@ -63,7 +63,7 @@ RUN pip install --upgrade pip
 # REQUIREMENTS
 # =========================================================
 
-COPY requirements.txt .
+COPY app/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -71,7 +71,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # PROJECT FILES
 # =========================================================
 
-COPY . .
+COPY app/ .
 
 # =========================================================
 # STATIC / MEDIA / PROFILES

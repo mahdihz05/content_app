@@ -1,0 +1,17 @@
+{
+  "$schema": "./manifest.schema.json",
+  "manifest_version": "1.0",
+  "workflows": [
+    {
+      "name": "legacy.ai",
+      "version": "1.0.0",
+      "path": "archive/legacy-ai.v1.sanitized.json",
+      "classification": "legacy-evidence",
+      "deployable": false,
+      "expected_active": false,
+      "credential_aliases": [],
+      "source": "repository n8n SQLite snapshot",
+      "captured_at": "2026-09-13"
+    }
+  ]
+}

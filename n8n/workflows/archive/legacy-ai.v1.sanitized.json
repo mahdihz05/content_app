@@ -1,0 +1,32 @@
+{
+  "name": "legacy.ai",
+  "active": false,
+  "deployable": false,
+  "evidence_only": true,
+  "parameters_redacted": true,
+  "nodes": [
+    {"name": "Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2.1},
+    {"name": "Edit Fields", "type": "n8n-nodes-base.set", "typeVersion": 3.4},
+    {"name": "HTTP Request", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.4},
+    {"name": "Code in Python", "type": "n8n-nodes-base.code", "typeVersion": 2},
+    {"name": "HTTP Request1", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.4}
+  ],
+  "flow": [
+    "Webhook",
+    "Edit Fields",
+    "HTTP Request",
+    "Code in Python",
+    "HTTP Request1"
+  ],
+  "omitted": [
+    "parameters",
+    "credentials",
+    "webhook paths",
+    "code",
+    "URLs",
+    "staticData",
+    "pinData",
+    "execution data",
+    "user and project identifiers"
+  ]
+}

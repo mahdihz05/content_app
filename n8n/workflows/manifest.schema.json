@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["manifest_version", "workflows"],
+  "properties": {
+    "manifest_version": {"type": "string"},
+    "workflows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version", "path", "classification", "deployable", "expected_active", "credential_aliases"],
+        "properties": {
+          "name": {"type": "string"},
+          "version": {"type": "string"},
+          "path": {"type": "string"},
+          "classification": {"enum": ["legacy-evidence", "production", "draft"]},
+          "deployable": {"type": "boolean"},
+          "expected_active": {"type": "boolean"},
+          "credential_aliases": {"type": "array", "items": {"type": "string"}},
+          "source": {"type": "string"},
+          "captured_at": {"type": "string", "format": "date"}
+        }
+      }
+    }
+  }
+}

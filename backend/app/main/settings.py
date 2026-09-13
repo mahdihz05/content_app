@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,13 +20,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-u#t44!c5w6@y85v%0&zm1fq+^d@(71(t*)5wagcd-emdejt&58'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'true').lower() in {'1', 'true', 'yes'}
+
+# Production must inject this value. The fallback is intentionally unusable as
+# a shared deployment secret and exists only to preserve local development.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-local-development-only')
 
 ALLOWED_HOSTS = ['*']
+
+SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'false').lower() in {'1', 'true', 'yes'}
+SESSION_COOKIE_SECURE = os.getenv('DJANGO_SESSION_COOKIE_SECURE', 'false').lower() in {'1', 'true', 'yes'}
+CSRF_COOKIE_SECURE = os.getenv('DJANGO_CSRF_COOKIE_SECURE', 'false').lower() in {'1', 'true', 'yes'}
+SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '0'))
 
 
 # Application definition
@@ -37,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'common',
     'user',
     'dashboard',
     'campaigns',
@@ -50,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'common.middleware.CorrelationIdMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,14 +93,12 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-import os
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'project_db'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'strongpassword'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
         'HOST': os.environ.get('DATABASE_HOST', 'db'),   # <-- مهم: default = db
         'PORT': os.environ.get('DATABASE_PORT', '5432'),
     }
@@ -139,6 +146,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # Default primary key field type
@@ -176,8 +184,8 @@ def cors_middleware(get_response):
     return middleware
 
 
-AI_API_KEY='sk-TFnTiM7cLOYZ3vWWOl8C6i3vt35u2xTMUjp5iZ1Zv4Q40frt'
-OPENAI_API_KEY='sk-TFnTiM7cLOYZ3vWWOl8C6i3vt35u2xTMUjp5iZ1Zv4Q40frt'
+AI_API_KEY = os.getenv('AI_API_KEY', '')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', AI_API_KEY)
 
 
 SELENIUM_HUB_URL = 'http://selenium:4444/wd/hub'
@@ -210,3 +218,11 @@ CELERY_TIMEZONE = 'Asia/Tehran'
 
 SERP_API_KEY = os.getenv("SERP_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", '')
+
+# Phase 0 convention: all V2 capabilities are disabled unless explicitly
+# listed. Phase 1 will add workspace-aware evaluation without changing callers.
+V2_FEATURE_FLAGS = {
+    flag.strip()
+    for flag in os.getenv('V2_FEATURE_FLAGS', '').split(',')
+    if flag.strip()
+}
