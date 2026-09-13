@@ -2,14 +2,14 @@
 
 **Weighted completion: 0%**
 
-Phase 0 implementation is in progress. Six of eight Phase 0 development tasks
-have passed their available required verification. Phase acceptance remains at
-0% because PostgreSQL/CI/browser, secret rotation, and backup/restore gates are
-not accepted.
+Phase 0 implementation is complete: all eight internal development tasks have
+passed their technically executable verification. Phase acceptance and its 8%
+weight remain at 0% pending provider-side credential revocation, deployment
+secret-store validation, coordinated history remediation, and owner sign-off.
 
 | Phase | Weight | Status | Completion | Exit checkpoint |
 | --- | ---: | --- | ---: | --- |
-| 0. Baseline, Safety, And Compatibility Contract | 8% | In progress (6/8 tasks) | 0% | Characterized, tested current behavior and safe release baseline |
+| 0. Baseline, Safety, And Compatibility Contract | 8% | Implementation complete; acceptance pending external gates (8/8 internal) | 0% | Characterized, tested current behavior and safe release baseline |
 | 1. Workspace Tenancy, Policy, And Execution Ledger | 16% | Not started | 0% | Workspace isolation, approvals, commands, audit, and outbox proven |
 | 2. Canonical Content History And Asset Foundation | 15% | Not started | 0% | Legacy content/version/publication history reconciled |
 | 3. Connections And Previous-Content Ingestion | 14% | Not started | 0% | Pilot connector imports incrementally without duplicates |
@@ -31,9 +31,9 @@ Every item below starts at `Not started / 0%`. Check an item only after implemen
 - [x] `P0-DB-001` - Complete - 100% - PostgreSQL 16 forward migration and seeded custom-dump restore rehearsal passed with matching counts.
 - [x] `P0-UI-001` - Complete - 100% - Two Chromium smoke tests pass in the built backend image against PostgreSQL.
 - [x] `P0-N8N-001` - Complete - 100% - Sanitized evidence/governance validated; deployed volume has zero workflows/webhooks/credentials/executions.
-- [ ] `P0-SEC-001` - Blocked - 0% - Hard-coded source credentials removed, but tracked `.env`, rotation/revocation, and deployment secret-store verification require owner access.
+- [ ] `P0-SEC-001` - Implementation complete / acceptance pending external gate - 0% accepted - Tracked tree is clean and environment loading is implemented; provider revocation, deployment secret-store validation, and coordinated history remediation require external authority.
 - [x] `P0-TST-001` - Complete - 100% - 23 authentication/content/Telegram/common characterization tests pass on PostgreSQL 16.
-- [ ] `P0-TST-002` - In progress - 0% - GitHub Actions pipeline is implemented and equivalent local steps pass; no hosted CI run exists yet.
+- [x] `P0-TST-002` - Complete - 100% - Hosted GitHub Actions run `34755437493` passed from a clean checkout on PostgreSQL 16, including browser smoke.
 
 ### Phase 1 - 16% - 0%
 
@@ -146,11 +146,11 @@ Every item below starts at `Not started / 0%`. Check an item only after implemen
 
 ### Phase 0 - 8%
 
-- [ ] Inventory and classify active, compatibility, and orphaned routes/assets.
-- [ ] Add characterization coverage for active content and Telegram behavior.
-- [ ] Establish CI, health/readiness, correlation IDs, and error conventions.
-- [ ] Export/archive the inactive legacy n8n workflow; define source-controlled workflow standards.
-- [ ] Rotate exposed secrets and complete backup/migration rehearsal prerequisites.
+- [x] Inventory and classify active, compatibility, and orphaned routes/assets.
+- [x] Add characterization coverage for active content and Telegram behavior.
+- [x] Establish CI, health/readiness, correlation IDs, and error conventions.
+- [x] Export/archive the inactive legacy n8n workflow; define source-controlled workflow standards.
+- [ ] Complete external provider revocation, deployment secret-store validation, coordinated history remediation, and acceptance sign-off. Repository remediation and backup/migration rehearsal are complete.
 
 ### Phase 1 - 16%
 

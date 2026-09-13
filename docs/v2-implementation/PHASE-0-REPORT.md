@@ -1,148 +1,106 @@
-# Implemented Tasks
+# Phase 0 Implementation Report
 
-- `P0-BE-001`: complete. Active, compatibility, orphaned, and broken-consumer routes are inventoried in `docs/api/ROUTE-COMPATIBILITY-INVENTORY.md`; resolver assertions cover representative active and stale paths.
-- `P0-BE-002`: complete. Additive V2 correlation ID, error envelope, authenticated health/readiness, and fail-closed feature-flag interfaces are implemented and locally verified.
-- `P0-DB-001`: complete. Seeded PostgreSQL 16 migration/dump/restore reconciliation passed.
-- `P0-UI-001`: complete. Two Chromium smoke tests pass inside the built backend image.
-- `P0-N8N-001`: complete. Sanitized evidence/governance pass and deployed n8n volume state is verified empty.
-- `P0-SEC-001`: blocked after partial remediation. Hard-coded source credentials were removed; rotation/revocation and tracked `.env` remediation require deployment-owner action.
-- `P0-TST-001`: complete. Twenty-three tests pass against PostgreSQL 16.
-- `P0-TST-002`: in progress. GitHub Actions configuration exists and equivalent local steps pass; hosted execution is pending.
+# Completed Internal Work
 
-# Files / Components Changed
+- `P0-BE-001`: route and first-party consumer compatibility inventory completed; representative active and stale paths have resolver assertions.
+- `P0-BE-002`: additive correlation ID, V2 error envelope, authenticated health/readiness, feature-flag convention, and future tool-envelope contract completed.
+- `P0-DB-001`: migration inventory reconciled through `content.0019`; data-bearing PostgreSQL migration and two-target restore rehearsal completed.
+- `P0-UI-001`: no product UI added; active content creation and Telegram templates have repeatable Chromium smoke coverage.
+- `P0-N8N-001`: legacy workflow evidence sanitized and archived; manifest and governance completed; no workflow activated.
+- `P0-SEC-001`: all repository-executable remediation completed. Secrets use environment injection, local/runtime artifacts are ignored and untracked, 1,636 committed Chromium profile artifacts were removed, n8n was digest-pinned, and tracked-tree scanning is clean. External revocation and history remediation remain acceptance gates.
+- `P0-TST-001`: authentication, content, Telegram, common contract, route, and browser characterization coverage completed.
+- `P0-TST-002`: GitHub Actions baseline completed and proven by a successful hosted clean-checkout run.
+- Provider clients are initialized lazily so Django management commands, checks, and mocked characterization tests do not require provider credentials. Real provider calls still require environment-injected credentials.
 
-- Added `backend/app/common/` for Phase 0 cross-cutting interfaces.
-- Updated `backend/app/main/settings.py` and `backend/app/main/urls.py` additively.
-- Added/updated authentication, content, Telegram, route, and browser characterization tests.
-- Replaced import-time package exports with lazy exports in two legacy/internal packages so full Django test discovery no longer fails on circular/uninstalled model imports.
-- Added API compatibility, browser smoke, migration, security, and n8n governance evidence.
-- Deleted two tracked executable ad-hoc provider scripts that contained credentials.
+# Tests And Verification
 
-# Database / Migrations
+- PostgreSQL 16 full Django discovery with browser smoke enabled: PASS, 23/23.
+- Explicit Chromium browser smoke: PASS, 2/2.
+- Explicit route compatibility assertions: PASS, 2/2.
+- `python manage.py check`: PASS with no issues and no provider credentials.
+- Production-configured `python manage.py check --deploy`: PASS with no issues.
+- `makemigrations --check --dry-run`: PASS, no model drift.
+- `migrate --check` and `showmigrations --plan`: PASS through all 56 migrations.
+- `python -m compileall -q .`: PASS.
+- `python -m pip check`: PASS.
+- n8n manifest, schema, and sanitized archive JSON parsing: PASS.
+- `actionlint`: PASS.
+- `docker compose config --quiet`: PASS.
+- `git diff --check`: PASS.
+- Hosted GitHub Actions run: PASS.
+- No verified route, response, template, content persistence, Telegram, or browser regression was found.
 
-No V2 schema or data migration was created. The pre-existing
-`backend/app/content/migrations/0019_alter_contentitem_status.py` remains
-content-unchanged and is included after review. All 56 migrations applied on
-PostgreSQL 16. A seeded custom-format dump restored with matching 35-table,
-migration, and representative domain counts; restore checks passed.
+# Security State
 
-# APIs
+- Hard-coded AI and Telegram values and executable ad-hoc provider scripts were removed in commit `392e4bd`.
+- `.env`, `n8n/data/`, `volume/`, and legacy browser profiles are ignored and absent from the tracked tree.
+- The local ignored files were preserved and no secret value was printed or added to evidence.
+- Gitleaks staged-change scan: zero findings.
+- Gitleaks scan of the resulting tracked tree after runtime-profile removal: zero findings.
+- Full Git-history scan: 13 redacted findings. The findings are retained in historical blobs and require provider-side revocation plus an owner-approved coordinated history rewrite.
+- HSTS include-subdomains and preload controls are environment-configurable. A production-like secure configuration passes `check --deploy`; local defaults remain non-HSTS to avoid making unverified TLS/domain claims.
+- Current repository security implementation is complete. Credential validity, revocation, deployment secret-store injection, and history purge are not claimed as verified.
 
-- Added authenticated `GET /api/v2/health/`.
-- Added authenticated `GET /api/v2/readiness/` with non-sensitive 503 errors.
-- Added `X-Correlation-ID` to responses without changing legacy bodies.
-- Documented V2 error and future tool-envelope contracts.
-- Removed or renamed no legacy route.
+# CI State
 
-# UI
+- Git transport authentication and push authorization were verified without exposing credentials.
+- Phase 0 commits were pushed to `origin/main`.
+- Hosted run `34755437493` at commit `cca4658` completed successfully on PostgreSQL 16.
+- The successful job includes dependency installation, browser dependency validation, system/deploy checks, migration drift/application/state/plan checks, Python compilation, full characterization discovery, explicit browser smoke, dependency integrity, JSON artifact validation, forbidden tracked-path checks, and diff hygiene.
+- CI execution is internally complete and is no longer a deferred gate.
 
-No product UI was added. Existing Django templates and vanilla JavaScript are
-unchanged. Two browser smoke tests cover active create-content/Telegram DOM and
-the characterized current/stale AI routes.
+# n8n State
 
-# n8n
+- Repository evidence contains one inactive, sanitized, non-deployable legacy `ai` topology and no credential aliases.
+- Live n8n 2.8.3 CLI exports found zero workflows and zero credentials.
+- Read-only deployed volume counts were `workflow=0`, `webhook=0`, `credential=0`, and `execution=0`.
+- Compose now pins n8n 2.8.3 to the observed image digest instead of `latest`.
+- No workflow was imported, activated, or invoked, and no V2 component depends on the legacy workflow.
 
-The repository SQLite snapshot was read-only inspected. It contains one
-workflow named `ai`, marked inactive, with no registered webhook, credential
-row, or stored execution. A fully parameter-redacted topology is archived as
-`n8n/workflows/archive/legacy-ai.v1.sanitized.json`, marked evidence-only and
-non-deployable. No workflow was activated or invoked. The deployed Compose
-volume contains zero workflows, webhooks, credentials, and executions.
+# Migration / Backup State
 
-# AI / Agent
+- No V2 schema or data migration was created.
+- The pre-existing `content.0019_alter_contentitem_status` leaf remains content-unchanged and tracked after review.
+- Disposable PostgreSQL 16 source migration applied all 56 migrations and seeded one user, campaign, content item, Telegram channel, and publish log.
+- A custom-format dump was restored with `--exit-on-error` into two independent empty databases.
+- Source and both restores matched at 56 migration rows, 35 public tables, and `1/1/1/1/1` representative domain rows.
+- `check` and `migrate --check` passed against both restores.
+- Rehearsal dump checksum: `afd2fa8e669f42e812053f03fb5062e9bec1ba1e7fb10f209c40c66fe7f6ea95`.
+- Disposable databases and dump artifact were removed after verification. No production data or backup was added to Git.
 
-No Agent or tool runtime was enabled. The future framework-independent tool
-envelope and effect classes are documentation only. Characterization confirmed
-that final generation currently calls missing
-`PromptService.build_content_generation_prompt` and
-`AITextService.generate_text` methods; tests mock these boundaries rather than
-silently repairing behavior.
+# Deferred External Gates
 
-# Security
+- Provider-side revocation/rotation for every historically exposed AI, Telegram, database, Django, n8n, and browser-profile credential or token.
+- Replacement-secret injection and smoke validation in the approved deployment secret store/runtime.
+- Owner-approved coordinated Git-history rewrite and remote clone/cache invalidation policy.
+- Owner/reviewer/QA Phase 0 acceptance sign-off.
 
-- Removed hard-coded AI and Telegram credentials from tracked Python source.
-- Runtime AI settings now use environment variables.
-- Added `.env` patterns to `.gitignore`.
-- Removed `.env`, `n8n/data/`, and `volume/` from the Git index while preserving local ignored files.
-- Text-source credential-pattern scan excluding runtime n8n data found only the already tracked `.env`.
-- Actual credential rotation/revocation, approved secret injection, Git-history remediation, and runtime artifact handling remain blocked by deployment-owner access.
+See `docs/v2-implementation/DEFERRED-EXTERNAL-GATES.md` for the minimal external completion record.
 
-# Tests Executed
+# Remaining Risks
 
-- `python manage.py check`
-- `python manage.py makemigrations --check --dry-run`
-- `python -m compileall -q .`
-- JSON parsing for the n8n manifest, schema, and sanitized archive
-- `python -m pip check`
-- PostgreSQL-targeted characterization test command
-- SQLite diagnostic run for `user.tests content.tests messaging_automation.tests common.tests`
-- SQLite diagnostic browser test discovery
-- credential-pattern scans
-- `git diff --check`
+- Historical Git objects still contain 13 redacted secret-class findings until coordinated remediation is approved and executed.
+- Credential rotation and replacement deployment behavior cannot be verified from this development environment.
+- Existing final-generation calls to two absent service methods, known browser/API route drift, and legacy authorization gaps remain characterized baseline defects; Phase 0 does not redefine those behaviors.
+- The local data-bearing restore proves the repository migration/rollback procedure, not the existence or freshness of an owner-managed production backup.
+- Production HSTS domain coverage must be enabled only after TLS and subdomain ownership are verified.
 
-# Test Results
+# Acceptance Status
 
-- Django system check: PASS, zero issues.
-- Migration drift check: PASS for model/file drift, with database-history warning because host `db` is unavailable.
-- Python compilation: PASS.
-- n8n JSON parse checks: PASS.
-- Python dependency check: PASS.
-- SQLite diagnostic characterization: PASS, 21/21.
-- PostgreSQL characterization: PASS, 23/23.
-- Full Django test discovery: PASS, 23/23 after two baseline import-time defects were corrected.
-- Browser smoke: PASS, 2/2 in the built backend image.
-- Seeded PostgreSQL dump/restore reconciliation: PASS.
-- GitHub Actions workflow validation with `actionlint`: PASS.
-- `check --deploy`: exits successfully with two documented HSTS subdomain/preload warnings; those settings require production TLS/domain approval.
-
-# Regression Results
-
-No verified legacy response or route regression was found in the 23-test
-PostgreSQL suite or two browser smoke tests. Hosted CI and external
-credential revocation evidence remain incomplete, so phase acceptance is not
-granted.
-
-# Acceptance Criteria
-
-- Route inventory: met for development scope.
-- Baseline tests in accepted CI: not met.
-- No exposed active secret remains and rotation is proven: not met; tracked `.env` and external revocation remain.
-- Backup/rehearsal evidence: production-like local rehearsal met; no claim is made about the real production database.
-- Workflow governance/no legacy workflow use: met for repository and deployed local volume.
-- Phase acceptance gate: not signed.
-
-# Known Issues
-
-- Existing final-generation service contract is broken at two missing methods.
-- Current browser/API route drift is recorded in the route inventory.
-- Existing campaign/research/multi-channel publish authorization gaps remain recorded for the approved later security migration.
-- Git history still contains previously tracked secret/runtime material.
-- Production HSTS subdomain/preload behavior is intentionally not enabled without the production TLS/domain gate.
-
-# Deferred Items
-
-- Hosted CI execution is pending a pushed branch/PR.
-- Credential rotation/revocation and clean history scan are deferred pending deployment-owner access.
-
-# Rollback Notes
-
-Disable/remove the `common` URL and correlation middleware entries to roll back
-the additive runtime interfaces. Legacy routes and bodies remain present. Do
-not restore revoked credentials; no migration or data rollback is required.
+- Phase 0 implementation: **COMPLETE**, 8/8 internal tasks technically complete.
+- Phase 0 acceptance: **PENDING EXTERNAL GATES**.
+- Official Phase 0 project weight: **0%** until external gates and owner acceptance are signed.
+- Phase 1: **NOT STARTED**.
 
 # Evidence
 
-- Baseline branch: `main`.
 - Baseline commit: `a73bda74d906a84697e32536aa37361d60d1d91e`.
-- Initial unrelated/untracked state: `docs/` and `content/migrations/0019_alter_contentitem_status.py`.
-- PostgreSQL characterization: 23 passed in 26.164 seconds.
-- Chromium browser smoke: 2 passed in 7.070 seconds.
-- Source/restore: 56 migration rows, 35 public tables, and matching representative domain counts.
-- Deployed local n8n volume: zero workflows/webhooks/credentials/executions.
-
-# Phase Status
-
-**IN PROGRESS / BLOCKED FROM ACCEPTANCE**
-
-Completed phases: 0/9. Phase 0 development tasks complete: 6/8 (75%). Accepted
-weighted progress: 0%. Remaining accepted weighted work: 100%.
+- Initial implementation commit: `392e4bd29dbef5dc976c2e60e6a02c2bcb2702ae`.
+- Repository security completion commit: `8200df74b1c73782458e22dbbc2be47a404c0922`.
+- Successful hosted CI commit: `cca4658b6bc554b464d5008a738f23fdecd71ea2`.
+- Successful hosted CI: `https://github.com/mahdihz05/content_app/actions/runs/34755437493`.
+- Local PostgreSQL tests: 23 passed.
+- Local Chromium tests: 2 passed.
+- Migration/restore reconciliation: three matching datasets, 56 migrations, 35 tables, five representative domain rows each.
+- Deployed n8n state: zero workflows, webhooks, credentials, and executions.
+- Tracked browser runtime cleanup: 1,636 files removed from source control and permanently ignored.
