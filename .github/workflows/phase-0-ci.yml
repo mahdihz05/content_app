@@ -40,6 +40,8 @@ jobs:
       DJANGO_SESSION_COOKIE_SECURE: "true"
       DJANGO_CSRF_COOKIE_SECURE: "true"
       DJANGO_SECURE_HSTS_SECONDS: "31536000"
+      DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: "true"
+      DJANGO_SECURE_HSTS_PRELOAD: "true"
       AI_API_KEY: ci-placeholder
       OPENAI_API_KEY: ci-placeholder
       TELEGRAM_BOT_TOKEN: ci-placeholder
@@ -67,9 +69,19 @@ jobs:
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --noinput
           python manage.py migrate --check
+          python manage.py showmigrations --plan
+          python -m compileall -q .
       - name: Run characterization tests
         run: python manage.py test --noinput
       - name: Run browser smoke tests
         run: python manage.py test dashboard.browser_tests --noinput
       - name: Verify Python dependencies
         run: python -m pip check
+      - name: Verify baseline artifacts
+        working-directory: .
+        run: |
+          python -m json.tool n8n/workflows/manifest.json > /dev/null
+          python -m json.tool n8n/workflows/manifest.schema.json > /dev/null
+          python -m json.tool n8n/workflows/archive/legacy-ai.v1.sanitized.json > /dev/null
+          test -z "$(git ls-files '.env' 'n8n/data/**' 'volume/**' 'backend/app/messaging_automation___older/workers/profiles/**')"
+          git diff --check

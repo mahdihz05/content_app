@@ -5,10 +5,16 @@ from django.conf import settings
 class AIClient:
 
     def __init__(self):
-        self.client = OpenAI(
-            api_key=settings.AI_API_KEY,
-            base_url="https://api.gapgpt.app/v1"
-        )
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = OpenAI(
+                api_key=settings.AI_API_KEY,
+                base_url="https://api.gapgpt.app/v1"
+            )
+        return self._client
 
     # --------------------
     # TEXT

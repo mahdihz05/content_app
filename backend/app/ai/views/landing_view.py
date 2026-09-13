@@ -30,9 +30,6 @@ RULES:
 """
 
 
-ai_service = AIService()
-
-
 @require_POST
 def landing_chat_api(request):
 
@@ -53,7 +50,7 @@ def landing_chat_api(request):
             {"role": "user", "content": user_message},
         ]
 
-        reply = ai_service.chat(
+        reply = AIService().chat(
             messages=messages,
             temperature=0.6,
             max_tokens=500

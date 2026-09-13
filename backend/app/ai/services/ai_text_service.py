@@ -9,20 +9,25 @@ from typing import List, Dict, Optional
 
 class AITextService:
     def __init__(self):
-        self.client = openai.OpenAI(
-            base_url=getattr(
-                settings,
-                'OPENAI_BASE_URL',
-                'https://api.gapgpt.app/v1'
-            ),
-            api_key=settings.OPENAI_API_KEY
-        )
-
+        self._client = None
         self.model = getattr(
             settings,
             'OPENAI_MODEL',
             'gpt-4.1-mini'
         )
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = openai.OpenAI(
+                base_url=getattr(
+                    settings,
+                    'OPENAI_BASE_URL',
+                    'https://api.gapgpt.app/v1'
+                ),
+                api_key=settings.OPENAI_API_KEY
+            )
+        return self._client
 
     def chat(
             self,

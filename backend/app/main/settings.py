@@ -33,6 +33,12 @@ SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'false').lower() i
 SESSION_COOKIE_SECURE = os.getenv('DJANGO_SESSION_COOKIE_SECURE', 'false').lower() in {'1', 'true', 'yes'}
 CSRF_COOKIE_SECURE = os.getenv('DJANGO_CSRF_COOKIE_SECURE', 'false').lower() in {'1', 'true', 'yes'}
 SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '0'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv(
+    'DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', 'false'
+).lower() in {'1', 'true', 'yes'}
+SECURE_HSTS_PRELOAD = os.getenv(
+    'DJANGO_SECURE_HSTS_PRELOAD', 'false'
+).lower() in {'1', 'true', 'yes'}
 
 
 # Application definition
