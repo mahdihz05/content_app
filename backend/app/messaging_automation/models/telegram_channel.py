@@ -1,9 +1,19 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from campaigns.models import Campaign
 
 
 class TelegramChannel(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    workspace = models.ForeignKey(
+        'workspaces.Workspace',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='legacy_telegram_channels',
+    )
 
     CHANNEL_TYPE_CHOICES = [
         ("channel", "Channel"),

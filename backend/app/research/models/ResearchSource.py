@@ -1,7 +1,17 @@
+import uuid
+
 from django.db import models
 from content.models import ContentItem
 
 class ResearchSource(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    workspace = models.ForeignKey(
+        'workspaces.Workspace',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='legacy_research_sources',
+    )
 
     SOURCE_TYPE = [
         ("ai", "AI"),

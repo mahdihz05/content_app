@@ -7,6 +7,8 @@ from rest_framework import status
 from messaging_automation.models.telegram_channel import TelegramChannel
 from messaging_automation.models.channel_verification import ChannelVerification
 from messaging_automation.services.telegram_api import TelegramAPI
+from workspaces.access import require_workspace_action
+from workspaces.policy import Actions
 
 
 class RequestChannelVerificationAPIView(APIView):
@@ -16,7 +18,11 @@ class RequestChannelVerificationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        verification = ChannelVerification.objects.create(user=request.user)
+        workspace = require_workspace_action(request, Actions.CONNECTION_MANAGE).workspace
+        verification = ChannelVerification.objects.create(
+            user=request.user,
+            workspace=workspace,
+        )
         return Response({
             "success": True,
             "token": verification.token
@@ -31,6 +37,7 @@ class ConfirmChannelAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONNECTION_MANAGE).workspace
         token = request.data.get("token", "").strip()
 
         if not token:
@@ -43,7 +50,7 @@ class ConfirmChannelAPIView(APIView):
         try:
             verification = ChannelVerification.objects.get(
                 token=token,
-                user=request.user,
+                workspace=workspace,
                 is_verified=False
             )
         except ChannelVerification.DoesNotExist:
@@ -111,6 +118,7 @@ class ConfirmChannelAPIView(APIView):
             user=request.user,
             chat_id=chat_id,
             defaults={
+                "workspace": workspace,
                 "title": title,
                 "username": username,
                 "channel_type": chat_type,
@@ -175,8 +183,9 @@ class UserChannelsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_VIEW).workspace
         channels = TelegramChannel.objects.filter(
-            user=request.user,
+            workspace=workspace,
             is_verified=True,
             is_active=True
         ).order_by("-created_at")
@@ -196,10 +205,11 @@ class UserChannelsAPIView(APIView):
         })
 
     def delete(self, request, channel_id):
+        workspace = require_workspace_action(request, Actions.CONNECTION_MANAGE).workspace
         try:
             channel = TelegramChannel.objects.get(
                 id=channel_id,
-                user=request.user
+                workspace=workspace,
             )
             channel.delete()
             return Response({"success": True})
@@ -217,6 +227,8 @@ class PublishToChannelsAPIView(APIView):
     def post(self, request):
         from content.models import ContentItem
         from messaging_automation.services.telegram_publisher import TelegramPublisher
+        from workspaces.access import require_workspace_action
+        from workspaces.policy import Actions
 
         content_id = request.data.get("content_id")
         channel_ids = request.data.get("channel_ids", [])
@@ -227,8 +239,9 @@ class PublishToChannelsAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        context = require_workspace_action(request, Actions.CONTENT_PUBLISH)
         try:
-            content_item = ContentItem.objects.get(id=content_id)
+            content_item = ContentItem.objects.get(id=content_id, workspace=context.workspace)
         except ContentItem.DoesNotExist:
             return Response(
                 {"error": "محتوا پیدا نشد"},
@@ -244,7 +257,7 @@ class PublishToChannelsAPIView(APIView):
 
         channels = TelegramChannel.objects.filter(
             id__in=channel_ids,
-            user=request.user,
+            workspace=context.workspace,
             is_verified=True,
             is_active=True
         )

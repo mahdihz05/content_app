@@ -5,17 +5,20 @@ from rest_framework import status
 
 from content.models import ContentItem
 from messaging_automation.models.telegram_publish_log import TelegramPublishLog
+from workspaces.access import require_workspace_action
+from workspaces.policy import Actions
 
 
 class PublishLogsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, content_id):
+        workspace = require_workspace_action(request, Actions.CONTENT_VIEW).workspace
 
         try:
             content_item = ContentItem.objects.get(
                 id=content_id,
-                campaign__user=request.user
+                workspace=workspace,
             )
         except ContentItem.DoesNotExist:
             return Response(
@@ -25,7 +28,7 @@ class PublishLogsAPIView(APIView):
 
         logs = (
             TelegramPublishLog.objects
-            .filter(content_item=content_item)
+            .filter(content_item=content_item, workspace=workspace)
             .select_related("channel")
             .order_by("-created_at")
         )

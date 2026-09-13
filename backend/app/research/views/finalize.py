@@ -3,14 +3,20 @@ from django.views.decorators.csrf import csrf_exempt
 
 from utils.api_response import api_response
 from content.models import ContentItem
+from django.contrib.auth.decorators import login_required
+from workspaces.access import workspace_object_or_404
+from workspaces.policy import Actions
 
 
 @csrf_exempt
+@login_required
 def finalize_research(request, content_id):
     if request.method != "POST":
         return api_response(False, error="Invalid method", status_code=405)
 
-    content_item = get_object_or_404(ContentItem, id=content_id)
+    content_item = workspace_object_or_404(
+        request, ContentItem, action=Actions.CONTENT_MUTATE, id=content_id
+    )
 
     sources = content_item.research_sources.filter(is_selected=True)
 

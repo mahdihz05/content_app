@@ -3,13 +3,15 @@ from rest_framework import status
 
 from campaigns.models import Campaign
 from utils.api_response import api_response
+from workspaces.access import require_workspace_action
+from workspaces.policy import Actions
 @login_required
 def campaign_list(request):
     if request.method == 'GET':
-        user = request.user
         list = []
         try:
-            campaigns = Campaign.objects.filter(user=user).all().order_by('-id')
+            context = require_workspace_action(request, Actions.CONTENT_VIEW)
+            campaigns = Campaign.objects.filter(workspace=context.workspace).order_by('-id')
             for campaign in campaigns:\
                 list.append({
                     "id":campaign.id,

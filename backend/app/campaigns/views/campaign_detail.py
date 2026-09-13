@@ -3,22 +3,24 @@ from django.contrib.auth.decorators import login_required
 from rest_framework import status
 from campaigns.models import Campaign
 from utils.api_response import api_response
+from workspaces.access import workspace_object_or_404
+from workspaces.policy import Actions
 
 
 @login_required
 def campaign_detail(request):
     if request.method == 'GET':
-        user = request.user
         campaign_id = request.GET.get('campaign_id')
         if not campaign_id:
             return api_response(success=False,
                                 error='campaign_id is required',
                                 status_code=status.HTTP_400_BAD_REQUEST)
-        campaign = Campaign.objects.get(id=campaign_id)
-        if not campaign:
-            return api_response(success=False,
-                                error='campaign not found',
-                                status_code=status.HTTP_404_NOT_FOUND)
+        campaign = workspace_object_or_404(
+            request,
+            Campaign,
+            action=Actions.CONTENT_VIEW,
+            id=campaign_id,
+        )
         data = {
             'id': campaign_id,
             'title': campaign.title,

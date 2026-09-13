@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'common',
+    'workspaces.apps.WorkspacesConfig',
+    'audit',
+    'automation',
     'user',
     'dashboard',
     'campaigns',
@@ -89,6 +92,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'workspaces.context_processors.workspace_context',
             ],
         },
     },
@@ -232,3 +236,4 @@ V2_FEATURE_FLAGS = {
     for flag in os.getenv('V2_FEATURE_FLAGS', '').split(',')
     if flag.strip()
 }
+V2_WORKSPACE_FEATURE_FLAG = 'workspaces'

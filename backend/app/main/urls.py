@@ -10,6 +10,8 @@ from ai.views.landing_view import landing_chat_api, landing_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v2/', include('common.urls')),
+    path('api/v2/', include('workspaces.urls')),
+    path('api/v2/internal/', include('automation.urls')),
 
     # Apps
     path('auth/', include('user.urls')),

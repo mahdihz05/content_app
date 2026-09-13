@@ -6,13 +6,19 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from research.models import ResearchSource
 from ai.services.ai_text_service import AITextService
+from django.contrib.auth.decorators import login_required
+from workspaces.access import workspace_object_or_404
+from workspaces.policy import Actions
 
 @csrf_exempt
+@login_required
 def generate_search_queries(request, content_id):
     if request.method != "POST":
         return api_response(False, error="Invalid method", status_code=405)
 
-    content_item = get_object_or_404(ContentItem, id=content_id)
+    content_item = workspace_object_or_404(
+        request, ContentItem, action=Actions.CONTENT_MUTATE, id=content_id
+    )
 
     try:
         body = json.loads(request.body or "{}")

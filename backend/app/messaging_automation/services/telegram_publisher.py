@@ -11,6 +11,8 @@ class TelegramPublisher:
         self.api = TelegramAPI(settings.TELEGRAM_BOT_TOKEN)
 
     def publish(self, content_item, channel):
+        if not content_item.workspace_id or content_item.workspace_id != channel.workspace_id:
+            raise RuntimeError('Content and channel must belong to the same workspace.')
         information = content_item.information or {}
         generated_content = information.get("generated_content", "")
         image_url = information.get("image_url")
@@ -60,6 +62,7 @@ class TelegramPublisher:
             TelegramPublishLog.objects.create(
                 content_item=content_item,
                 channel=channel,
+                workspace=content_item.workspace,
                 status=status,
                 response_json=response_json,
                 error_message=error_message

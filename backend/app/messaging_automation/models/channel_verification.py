@@ -1,5 +1,6 @@
 import random
 import string
+import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -11,6 +12,14 @@ def generate_token():
 
 
 class ChannelVerification(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    workspace = models.ForeignKey(
+        'workspaces.Workspace',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='legacy_channel_verifications',
+    )
 
     user = models.ForeignKey(
         get_user_model(),

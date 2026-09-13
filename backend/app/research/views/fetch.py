@@ -5,13 +5,19 @@ from ai.services.ai_text_service import AITextService
 from utils.api_response import api_response
 from research.models import ResearchSource
 from ai.services.prompt_service import PromptService  # مسیر را با پروژه خود یکی کنید
+from django.contrib.auth.decorators import login_required
+from workspaces.access import workspace_object_or_404
+from workspaces.policy import Actions
 
 @csrf_exempt
+@login_required
 def fetch_source_data(request, source_id):
     if request.method != "POST":
         return api_response(False, error="Invalid method", status_code=405)
 
-    source = get_object_or_404(ResearchSource, id=source_id)
+    source = workspace_object_or_404(
+        request, ResearchSource, action=Actions.CONTENT_MUTATE, id=source_id
+    )
 
     prompt = PromptService.get_fetch_source_data_prompt(query=source.title)
 

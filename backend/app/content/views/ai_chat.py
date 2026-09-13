@@ -22,6 +22,8 @@ from ai.services.prompt_service import PromptService
 from ai.services.ai_text_service import AITextService
 from ai.services.ai_service import AIService
 from ai.orchestration.conversation_orchestrator import ConversationOrchestrator
+from workspaces.access import require_workspace_action
+from workspaces.policy import Actions
 
 
 # ============================================================
@@ -37,8 +39,9 @@ class AIStartSession(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        workspace = require_workspace_action(self.request, Actions.CONTENT_VIEW).workspace
         context['campaigns'] = Campaign.objects.filter(
-            user=self.request.user
+            workspace=workspace
         ).order_by('-created_at')
         return context
 
@@ -51,6 +54,7 @@ class AISendMessage(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
         message = request.data.get('message', '').strip()
         session_id = request.data.get('session_id')
         content_item_id = request.data.get('content_item_id')
@@ -79,13 +83,14 @@ class AISendMessage(APIView):
 
         try:
             # مدیریت Session
-            session = self._get_or_create_session(session_id, request.user)
+            session = self._get_or_create_session(session_id, request.user, workspace)
 
             # مدیریت ContentItem با platform
             content_item = self._get_or_create_content_item(
                 content_item_id,
                 campaign_id,
                 request.user,
+                workspace,
                 platform
             )
 
@@ -167,29 +172,29 @@ class AISendMessage(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def _get_or_create_session(self, session_id, user):
+    def _get_or_create_session(self, session_id, user, workspace):
         """دریافت یا ایجاد session"""
         if session_id:
             try:
-                return AIChatSession.objects.get(id=session_id, user=user)
+                return AIChatSession.objects.get(id=session_id, workspace=workspace)
             except AIChatSession.DoesNotExist:
                 pass
 
-        return AIChatSession.objects.create(user=user)
+        return AIChatSession.objects.create(user=user, workspace=workspace)
 
-    def _get_or_create_content_item(self, content_item_id, campaign_id, user, platform='website'):
+    def _get_or_create_content_item(self, content_item_id, campaign_id, user, workspace, platform='website'):
         """دریافت یا ایجاد content_item با platform"""
         if content_item_id:
             try:
                 return ContentItem.objects.get(
                     id=content_item_id,
-                    campaign__user=user
+                    workspace=workspace,
                 )
             except ContentItem.DoesNotExist:
                 pass
 
         if campaign_id:
-            campaign = Campaign.objects.get(id=campaign_id, user=user)
+            campaign = Campaign.objects.get(id=campaign_id, workspace=workspace)
             return ContentItem.objects.create(
                 campaign=campaign,
                 title='محتوای جدید',
@@ -207,6 +212,7 @@ class AIGenerateImage(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
         prompt = request.data.get('prompt', '').strip()
         session_id = request.data.get('session_id')
         size = request.data.get('size', '1024x1024')
@@ -234,7 +240,7 @@ class AIGenerateImage(APIView):
 
         try:
             # مدیریت Session
-            session = self._get_or_create_session(session_id, request.user)
+            session = self._get_or_create_session(session_id, request.user, workspace)
 
             # ذخیره پیام کاربر (درخواست تصویر)
             user_message = AIMessage.objects.create(
@@ -280,15 +286,15 @@ class AIGenerateImage(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def _get_or_create_session(self, session_id, user):
+    def _get_or_create_session(self, session_id, user, workspace):
         """دریافت یا ایجاد session"""
         if session_id:
             try:
-                return AIChatSession.objects.get(id=session_id, user=user)
+                return AIChatSession.objects.get(id=session_id, workspace=workspace)
             except AIChatSession.DoesNotExist:
                 pass
 
-        return AIChatSession.objects.create(user=user)
+        return AIChatSession.objects.create(user=user, workspace=workspace)
 
 
 class AISessionHistory(APIView):
@@ -299,11 +305,12 @@ class AISessionHistory(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, session_id):
+        workspace = require_workspace_action(request, Actions.CONTENT_VIEW).workspace
         try:
             session = AIChatSession.objects.select_related(
                 'content_item',
                 'content_item__campaign'
-            ).get(id=session_id, user=request.user)
+            ).get(id=session_id, workspace=workspace)
 
             # دریافت پیام‌ها
             # دریافت پیام‌ها (شامل تصاویر)
@@ -370,15 +377,16 @@ class AINewConversation(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
         campaign_id = request.data.get('campaign_id')
         platform = request.data.get('platform', 'website')
 
         try:
-            session = AIChatSession.objects.create(user=request.user)
+            session = AIChatSession.objects.create(user=request.user, workspace=workspace)
 
             content_item = None
             if campaign_id:
-                campaign = Campaign.objects.get(id=campaign_id, user=request.user)
+                campaign = Campaign.objects.get(id=campaign_id, workspace=workspace)
                 content_item = ContentItem.objects.create(
                     campaign=campaign,
                     title='محتوای جدید',
@@ -415,6 +423,7 @@ def create_content_item(request):
     الزامی: campaign_id, title, main_keyword
     """
     campaign_id = request.data.get('campaign_id')
+    workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
     title = request.data.get('title', '').strip()
     main_keyword = request.data.get('main_keyword', '').strip()
 
@@ -425,7 +434,7 @@ def create_content_item(request):
         )
 
     try:
-        campaign = Campaign.objects.get(id=campaign_id, user=request.user)
+        campaign = Campaign.objects.get(id=campaign_id, workspace=workspace)
 
         with transaction.atomic():
             content_item = ContentItem.objects.create(
@@ -465,13 +474,14 @@ def create_content_item(request):
 @permission_classes([IsAuthenticated])
 def get_content_item(request, content_id):
     """دریافت اطلاعات کامل یک ContentItem"""
+    workspace = require_workspace_action(request, Actions.CONTENT_VIEW).workspace
     try:
         content_item = ContentItem.objects.select_related(
             'campaign'
         ).prefetch_related(
             'keywords',
             'research_sources'
-        ).get(id=content_id, campaign__user=request.user)
+        ).get(id=content_id, workspace=workspace)
 
         keywords = content_item.keywords.values(
             'id', 'keyword', 'source', 'is_selected'
@@ -517,10 +527,11 @@ def update_content_item(request, content_id):
     فیلدهای قابل ویرایش: title, main_keyword, additional_keywords,
     description, goal, platform, language, status, information
     """
+    workspace = require_workspace_action(request, Actions.CONTENT_MUTATE).workspace
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         updatable_fields = {
@@ -559,10 +570,11 @@ def update_content_item(request, content_id):
 @permission_classes([IsAuthenticated])
 def delete_content_item(request, content_id):
     """حذف ContentItem و تمام موارد مرتبط"""
+    workspace = require_workspace_action(request, Actions.CONTENT_DELETE).workspace
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         title = content_item.title
@@ -587,9 +599,8 @@ def list_content_items(request):
     status_filter = request.query_params.get('status')
     platform = request.query_params.get('platform')
 
-    queryset = ContentItem.objects.filter(
-        campaign__user=request.user
-    ).select_related('campaign')
+    workspace = require_workspace_action(request, Actions.CONTENT_VIEW).workspace
+    queryset = ContentItem.objects.filter(workspace=workspace).select_related('campaign')
 
     if campaign_id:
         queryset = queryset.filter(campaign_id=campaign_id)
@@ -649,10 +660,11 @@ def create_keyword(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    workspace = require_workspace_action(request, Actions.CONTENT_MUTATE).workspace
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_item_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         # بررسی تکراری نبودن
@@ -705,10 +717,11 @@ def bulk_create_keywords(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    workspace = require_workspace_action(request, Actions.CONTENT_MUTATE).workspace
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_item_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         # دریافت کلیدواژه‌های موجود
@@ -778,12 +791,13 @@ def bulk_create_keywords(request):
 @permission_classes([IsAuthenticated])
 def update_keyword(request, keyword_id):
     """آپدیت کلیدواژه"""
+    workspace = require_workspace_action(request, Actions.CONTENT_MUTATE).workspace
     try:
         keyword = Keyword.objects.select_related(
             'content_item__campaign'
         ).get(
             id=keyword_id,
-            content_item__campaign__user=request.user
+            content_item__workspace=workspace,
         )
 
         updatable_fields = {'keyword', 'source', 'is_selected'}
@@ -816,12 +830,13 @@ def update_keyword(request, keyword_id):
 @permission_classes([IsAuthenticated])
 def delete_keyword(request, keyword_id):
     """حذف کلیدواژه"""
+    workspace = require_workspace_action(request, Actions.CONTENT_DELETE).workspace
     try:
         keyword = Keyword.objects.select_related(
             'content_item__campaign'
         ).get(
             id=keyword_id,
-            content_item__campaign__user=request.user
+            content_item__workspace=workspace,
         )
 
         keyword_text = keyword.keyword
@@ -842,10 +857,11 @@ def delete_keyword(request, keyword_id):
 @permission_classes([IsAuthenticated])
 def list_keywords(request, content_id):
     """لیست کلیدواژه‌های یک محتوا"""
+    workspace = require_workspace_action(request, Actions.CONTENT_VIEW).workspace
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         keywords = Keyword.objects.filter(
@@ -875,6 +891,7 @@ def list_keywords(request, content_id):
 @permission_classes([IsAuthenticated])
 def generate_keywords_ai(request):
     """تولید کلیدواژه با AI"""
+    workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
     content_id = request.data.get('content_id')
 
     if not content_id:
@@ -886,7 +903,7 @@ def generate_keywords_ai(request):
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         # استفاده از سرویس AI برای تولید کلیدواژه
@@ -966,6 +983,7 @@ class GenerateOutlineAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
         content_id = request.data.get('content_id')
 
         if not content_id:
@@ -977,7 +995,7 @@ class GenerateOutlineAPI(APIView):
         try:
             content_item = ContentItem.objects.select_related('campaign').get(
                 id=content_id,
-                campaign__user=request.user
+                workspace=workspace,
             )
 
             # Mock outline - در نسخه واقعی باید از AI استفاده شود
@@ -1030,6 +1048,7 @@ class GenerateFinalContentAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_DRAFT).workspace
         content_id = request.data.get('content_id')
 
         if not content_id:
@@ -1041,7 +1060,7 @@ class GenerateFinalContentAPI(APIView):
         try:
             content_item = ContentItem.objects.select_related('campaign').get(
                 id=content_id,
-                campaign__user=request.user
+                workspace=workspace,
             )
 
             # تغییر وضعیت به generating
@@ -1126,6 +1145,7 @@ class GenerateFinalContentAPI(APIView):
 @permission_classes([IsAuthenticated])
 def add_research_source_to_content(request):
     """افزودن منبع تحقیق به ContentItem"""
+    workspace = require_workspace_action(request, Actions.CONTENT_MUTATE).workspace
     content_id = request.data.get('content_id')
     url = request.data.get('url', '').strip()
     title = request.data.get('title', '').strip()
@@ -1140,7 +1160,7 @@ def add_research_source_to_content(request):
     try:
         content_item = ContentItem.objects.select_related('campaign').get(
             id=content_id,
-            campaign__user=request.user
+            workspace=workspace,
         )
 
         # بررسی تکراری نبودن URL

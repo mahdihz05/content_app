@@ -6,6 +6,8 @@ from rest_framework import status
 from content.models import ContentItem
 from messaging_automation.models.telegram_channel import TelegramChannel
 from messaging_automation.services.telegram_publisher import TelegramPublisher
+from workspaces.access import require_workspace_action
+from workspaces.policy import Actions
 
 
 class PublishToTelegramAPIView(APIView):
@@ -13,6 +15,7 @@ class PublishToTelegramAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        workspace = require_workspace_action(request, Actions.CONTENT_PUBLISH).workspace
 
         content_id = request.data.get("content_id")
         channel_id = request.data.get("channel_id")
@@ -26,7 +29,7 @@ class PublishToTelegramAPIView(APIView):
         try:
             content_item = ContentItem.objects.get(
                 id=content_id,
-                campaign__user=request.user
+                workspace=workspace,
             )
         except ContentItem.DoesNotExist:
             return Response(
@@ -37,7 +40,7 @@ class PublishToTelegramAPIView(APIView):
         try:
             channel = TelegramChannel.objects.get(
                 id=channel_id,
-                user=request.user,
+                workspace=workspace,
                 is_verified=True,
                 is_active=True
             )

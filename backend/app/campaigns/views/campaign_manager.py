@@ -5,6 +5,8 @@ from campaigns.models import Campaign, CampaignGoal
 from utils.api_response import api_response
 from rest_framework import status
 from platforms.models import Platform
+from workspaces.access import require_workspace_action, workspace_object_or_404
+from workspaces.policy import Actions
 
 
 @csrf_exempt
@@ -18,6 +20,7 @@ def create_campaign(request):
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
+    context = require_workspace_action(request, Actions.CONTENT_DRAFT)
     try:
         payload = json.loads(request.body)
 
@@ -54,6 +57,7 @@ def create_campaign(request):
 
         campaign = Campaign.objects.create(
             user=user,
+            workspace=context.workspace,
             title=title,
             main_keyword=main_keyword,
             description=description,
@@ -88,28 +92,23 @@ def create_campaign(request):
 @login_required
 def update_campaign(request):
     if request.method == 'POST':
-        user = request.user
         payload = json.loads(request.body)
         campaign_id = payload.get('campaign_id')
         if not campaign_id :
             return api_response(success=False,
                                 error='Campaign id is required',
                                 status_code=status.HTTP_400_BAD_REQUEST)
-        try:
-            campaign = Campaign.objects.get(id=campaign_id)
-            if not campaign:
-                return api_response(success=False,
-                                    error='Campaign not found',
-                                    status_code=status.HTTP_404_NOT_FOUND)
-            campaign.status = payload.get('status')
-            campaign.save()
-            return api_response(success=True,
-                                message='Campaign successfully updated',
-                                status_code=status.HTTP_200_OK)
-        except Exception as e:
-            return api_response(success=False,
-                                error=f'Campaign creation failed : {e}',
-                                status_code=status.HTTP_400_BAD_REQUEST)
+        campaign = workspace_object_or_404(
+            request,
+            Campaign,
+            action=Actions.CONTENT_MUTATE,
+            id=campaign_id,
+        )
+        campaign.status = payload.get('status')
+        campaign.save()
+        return api_response(success=True,
+                            message='Campaign successfully updated',
+                            status_code=status.HTTP_200_OK)
     return api_response(success=False,
                         message='method not allowed',
                         status_code=status.HTTP_405_METHOD_NOT_ALLOWED
@@ -121,27 +120,22 @@ def update_campaign(request):
 @login_required
 def delete_campaign(request):
     if request.method == 'POST':
-        user = request.user
         payload = json.loads(request.body)
         campaign_id = payload.get('campaign_id')
         if not campaign_id :
             return api_response(success=False,
                                 error='Campaign id is required',
                                 status_code=status.HTTP_400_BAD_REQUEST)
-        try:
-            campaign = Campaign.objects.get(id=campaign_id)
-            if not campaign:
-                return api_response(success=False,
-                                    error='Campaign not found',
-                                    status_code=status.HTTP_404_NOT_FOUND)
-            campaign.delete()
-            return api_response(success=True,
-                                message='Campaign successfully deleted',
-                                status_code=status.HTTP_200_OK)
-        except Exception as e:
-            return api_response(success=False,
-                                error=f'Campaign creation failed : {e}',
-                                status_code=status.HTTP_400_BAD_REQUEST)
+        campaign = workspace_object_or_404(
+            request,
+            Campaign,
+            action=Actions.CONTENT_DELETE,
+            id=campaign_id,
+        )
+        campaign.delete()
+        return api_response(success=True,
+                            message='Campaign successfully deleted',
+                            status_code=status.HTTP_200_OK)
     return api_response(success=False,
                         message='method not allowed',
                         status_code=status.HTTP_405_METHOD_NOT_ALLOWED

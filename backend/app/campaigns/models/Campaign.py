@@ -1,8 +1,18 @@
+import uuid
+
 from django.db import models
 from django.conf import settings
 from campaigns.models.CampaignGoal import CampaignGoal
 
 class Campaign(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    workspace = models.ForeignKey(
+        'workspaces.Workspace',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='legacy_campaigns',
+    )
     STATUS_CHOICES = [
         ("draft", "Draft"),
         ("active", "Active"),
