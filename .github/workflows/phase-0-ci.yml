@@ -45,8 +45,8 @@ jobs:
       AI_API_KEY: ci-placeholder
       OPENAI_API_KEY: ci-placeholder
       TELEGRAM_BOT_TOKEN: ci-placeholder
-      RUN_BROWSER_SMOKE: "1"
-      CHROME_BIN: /usr/bin/chromium
+      RUN_BROWSER_SMOKE: "0"
+      CHROME_BIN: /usr/bin/google-chrome
       CHROMEDRIVER_PATH: /usr/bin/chromedriver
 
     steps:
@@ -62,6 +62,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium chromium-driver
+          test -x "$CHROME_BIN"
+          test -x "$CHROMEDRIVER_PATH"
       - name: Verify Django and migrations
         run: |
           python manage.py check
@@ -80,6 +82,8 @@ jobs:
       - name: Run characterization tests
         run: python manage.py test --noinput
       - name: Run browser smoke tests
+        env:
+          RUN_BROWSER_SMOKE: "1"
         run: python manage.py test dashboard.browser_tests --noinput
       - name: Verify Python dependencies
         run: python -m pip check
